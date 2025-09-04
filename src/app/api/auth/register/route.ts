@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 import { prisma } from "@/lib/db"
 import { registerSchema } from "@/lib/validation"
 
@@ -28,14 +29,42 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.create({
       data: { email, hashedPassword, fullName },
-      select: { id: true, email: true, createdAt: true },
+      select: { id: true, email: true, fullName: true, createdAt: true },
     })
 
-    return NextResponse.json({
+    // Create JWT token and set as httpOnly cookie
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        fullName: user.fullName
+      },
+      process.env.JWT_SECRET || "fallback-secret-change-in-production",
+      { expiresIn: "7d" }
+    )
+
+    const response = NextResponse.json({
       success: true,
       data: { user },
       meta: { timestamp: new Date().toISOString() },
     })
+
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
+
+    // Create a new session for the user
+    const session = await prisma.session.create({
+      data: {
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000), // 7 days
+      },
+    })
+
+    return response
   } catch (err) {
     console.error(err)
     return NextResponse.json(

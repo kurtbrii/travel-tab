@@ -83,12 +83,17 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {
         setServerError(data?.error?.message ?? "Registration failed");
       } else {
         setSuccess(true);
+        // Redirect to dashboard after successful registration
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1000);
       }
     } catch {
       setServerError("Network error. Please try again.");

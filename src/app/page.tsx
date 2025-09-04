@@ -177,6 +177,13 @@ export default async function Home() {
                 <span className="text-sm text-muted-foreground">
                   Welcome, {user.fullName}
                 </span>
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-primary text-primary-foreground"
+                >
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
                 <LogoutButton />
               </div>
             ) : (
@@ -216,12 +223,20 @@ export default async function Home() {
               travel compliance confusion.
             </p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <Button asChild size="lg" className="px-8">
-                <Link href="/register">Start Planning Your Trip →</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="px-8">
-                <Link href="/login">Sign In</Link>
-              </Button>
+              {user ? (
+                <Button asChild size="lg" className="px-8">
+                  <Link href="/dashboard">Go to Dashboard →</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" className="px-8">
+                    <Link href="/register">Start Planning Your Trip →</Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg" className="px-8">
+                    <Link href="/login">Sign In</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">

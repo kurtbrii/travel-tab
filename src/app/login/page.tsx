@@ -4,6 +4,7 @@ import * as React from "react";
 import { z } from "zod";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { loginSchema } from "@/lib/validation";
@@ -13,6 +14,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 type FormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const [values, setValues] = React.useState<FormValues>({
     email: "",
     password: "",
@@ -63,13 +65,15 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {
         setServerError(data?.error?.message ?? "Sign in failed");
       } else {
         setSuccess(true);
-        // In a real app, you might redirect after a short delay
+        // Redirect to dashboard after successful login
+        window.location.href = "/dashboard";
       }
     } catch {
       setServerError("Network error. Please try again.");
