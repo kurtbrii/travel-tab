@@ -1,6 +1,8 @@
 // src/app/api/auth/login/route.ts
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import { cookies } from "next/headers"
 import { prisma } from "@/lib/db"
 import { loginSchema } from "@/lib/validation"
 
@@ -34,12 +36,31 @@ export async function POST(req: Request) {
       )
     }
 
-    // Normally, you’d call Auth.js here to issue a session cookie.
-    // For now, just return success.
-    return NextResponse.json({
+    // Create JWT token and set as httpOnly cookie
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        fullName: user.fullName
+      },
+      process.env.JWT_SECRET || "fallback-secret-change-in-production",
+      { expiresIn: "7d" }
+    )
+
+    const response = NextResponse.json({
       success: true,
-      data: { id: user.id, email: user.email },
+      data: { id: user.id, email: user.email, fullName: user.fullName },
     })
+
+
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
+
+    return response
   } catch (err) {
     console.error(err)
     return NextResponse.json(

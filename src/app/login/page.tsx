@@ -8,14 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { loginSchema } from "@/lib/validation";
 import logo from "@/assets/travel-tab-logo.png";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Loader2,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 
 type FormValues = z.infer<typeof loginSchema>;
 
@@ -64,6 +57,7 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -182,10 +176,7 @@ export default function LoginPage() {
                   />
                   Remember me
                 </label>
-                <Link
-                  href="#"
-                  className="text-sm text-primary hover:underline"
-                >
+                <Link href="#" className="text-sm text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -227,11 +218,11 @@ export default function LoginPage() {
 
         {/* Disclaimer */}
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          By signing in, you agree to our {" "}
+          By signing in, you agree to our{" "}
           <Link href="#" className="underline">
             Terms of Service
           </Link>{" "}
-          and {" "}
+          and{" "}
           <Link href="#" className="underline">
             Privacy Policy
           </Link>
