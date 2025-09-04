@@ -13,7 +13,7 @@ export default function LogoutButton() {
       });
 
       if (res.ok) {
-        router.refresh(); // Refresh the page to update auth state
+        router.push("/"); // Refresh the page to update auth state
       }
     } catch (error) {
       console.error("Logout failed:", error);
