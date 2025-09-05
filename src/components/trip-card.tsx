@@ -17,7 +17,7 @@ function TripCard({ trip }: TripCardProps) {
   return (
     <button
       onClick={handleTripClick}
-      className="card shadow-card hover:shadow-lg transition-shadow w-full text-left cursor-pointer"
+      className="card shadow-card hover:shadow-lg transition-shadow w-full h-full min-h-[260px] text-left cursor-pointer"
       aria-label={`View details for ${trip.title} trip to ${trip.destination}`}
     >
       <div className="flex items-start justify-between mb-4">
@@ -43,8 +43,11 @@ function TripCard({ trip }: TripCardProps) {
       <div className="flex items-center gap-1 mb-4 text-muted-foreground">
         <Calendar className="size-4" />
         <span className="text-sm">
-          {new Date(trip.startDate).toLocaleDateString()} -{" "}
-          {new Date(trip.endDate).toLocaleDateString()}
+          {new Date(trip.startDate).toISOString().slice(0, 10)} - {new Date(
+            trip.endDate
+          )
+            .toISOString()
+            .slice(0, 10)}
         </span>
       </div>
 
@@ -67,5 +70,4 @@ function TripCard({ trip }: TripCardProps) {
   );
 }
 
-// Ensure the component is exported
 export default TripCard;

@@ -48,7 +48,10 @@ export async function POST(req: Request) {
         fullName: user.fullName
       },
       jwtSecret,
-      { expiresIn: "7d" }
+      {
+        expiresIn: "7d",
+        algorithm: 'HS256' // Explicit algorithm for security
+      }
     )
 
     const response = NextResponse.json({
@@ -57,10 +60,13 @@ export async function POST(req: Request) {
       meta: { timestamp: new Date().toISOString() },
     })
 
-    response.cookies.set("auth-token", token, {
+    response.cookies.set({
+      name: 'auth-token',
+      value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 

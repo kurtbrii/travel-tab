@@ -1,12 +1,4 @@
-import { Trip, FeatureCardData, StepData } from "@/types";
-import {
-  IconShield,
-  IconList,
-  IconDoc,
-  IconSpark,
-  IconCalendar,
-  IconCheck
-} from "@/components/icons";
+import { Trip } from "@/types";
 
 // Dummy trip data
 export const dummyTrips: Trip[] = [
@@ -24,6 +16,30 @@ export const dummyTrips: Trip[] = [
   },
   {
     id: "2",
+    title: "European Backpacking",
+    destination: "Multiple Cities, Europe",
+    startDate: "2024-06-01",
+    endDate: "2024-06-30",
+    status: "Ready to Go",
+    statusColor:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400",
+    modules: ["BorderBuddy", "FlightTracker", "Accommodation"],
+    userId: "user-1"
+  },
+  {
+    id: "3",
+    title: "European Backpacking",
+    destination: "Multiple Cities, Europe",
+    startDate: "2024-06-01",
+    endDate: "2024-06-30",
+    status: "Ready to Go",
+    statusColor:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400",
+    modules: ["BorderBuddy", "FlightTracker", "Accommodation"],
+    userId: "user-1"
+  },
+  {
+    id: "4",
     title: "European Backpacking",
     destination: "Multiple Cities, Europe",
     startDate: "2024-06-01",

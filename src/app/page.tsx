@@ -239,7 +239,7 @@ export default async function Home() {
           </nav>
         </div>
         <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Travel Tab. All rights reserved.
+          &copy; {String(new Date().getUTCFullYear())} Travel Tab. All rights reserved.
         </div>
       </footer>
     </main>

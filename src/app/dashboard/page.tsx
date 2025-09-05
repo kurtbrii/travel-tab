@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/travel-tab-logo.png";
 import ThemeToggle from "@/components/theme-toggle";
 import LogoutButton from "@/components/logout-button";
-import TripCard from "@/components/trip-card";
-import { AddTripCard } from "@/components/add-trip-card";
+import TripsGrid from "@/components/trips-grid";
 import { User } from "lucide-react";
 import { dummyTrips } from "@/constants/data";
 
@@ -54,13 +53,8 @@ export default async function Dashboard() {
           </p>
         </div>
 
-        {/* Trips Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {dummyTrips.map((trip) => (
-            <TripCard key={trip.id} trip={trip} />
-          ))}
-          <AddTripCard />
-        </div>
+        {/* Trips Grid (draggable) */}
+        <TripsGrid initialTrips={dummyTrips} />
       </div>
     </main>
   );
