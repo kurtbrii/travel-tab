@@ -1,8 +1,19 @@
+"use client";
+
 import { Plus } from "lucide-react";
 
 export function AddTripCard() {
+  const handleAddTrip = () => {
+    // TODO: Implement trip creation modal/form
+    alert("Trip creation feature coming soon!");
+  };
+
   return (
-    <div className="card shadow-card hover:shadow-lg transition-all cursor-pointer group border-2 border-dashed border-border hover:border-primary/50 bg-accent/30 hover:bg-accent/50">
+    <button
+      onClick={handleAddTrip}
+      className="card shadow-card hover:shadow-lg transition-all cursor-pointer group border-2 border-dashed border-border hover:border-primary/50 bg-accent/30 hover:bg-accent/50 w-full text-left"
+      aria-label="Add new trip"
+    >
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
           <Plus className="size-8 text-primary" />
@@ -12,6 +23,6 @@ export function AddTripCard() {
           Start planning your next adventure
         </p>
       </div>
-    </div>
+    </button>
   );
 }

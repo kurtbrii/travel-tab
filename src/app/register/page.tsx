@@ -3,6 +3,7 @@
 import * as React from "react";
 import { z } from "zod";
 import { registerSchema } from "@/lib/validation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -23,6 +24,7 @@ import {
 type FormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [serverError, setServerError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
 
@@ -31,18 +33,18 @@ export default function RegisterPage() {
     email: "",
     password: "",
   });
+
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof FormValues, string>>
   >({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
-  const [fullName, setFullName] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
 
   const canSubmit = React.useMemo(() => {
     const email = values.email.trim();
-    const name = fullName.trim();
+    const name = values.fullName.trim();
     const pass = values.password;
     const baseValid = registerSchema.safeParse({
       email,
@@ -50,10 +52,9 @@ export default function RegisterPage() {
       password: pass,
     }).success;
     const nameValid = name.length > 0;
-    const confirmValid = pass == confirm;
-    // const confirmValid = confirm.trim().length > 0 && confirm === pass;
+    const confirmValid = pass === confirm;
     return baseValid && nameValid && confirmValid;
-  }, [values.email, values.password, fullName, confirm]);
+  }, [values.email, values.password, values.fullName, confirm]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,10 +64,12 @@ export default function RegisterPage() {
 
     const normalized = {
       email: values.email.trim(),
-      fullName: fullName.trim(),
+      fullName: values.fullName.trim(),
       password: values.password,
     } as const;
+
     const parsed = registerSchema.safeParse(normalized);
+
     if (!parsed.success) {
       const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
       for (const issue of parsed.error.issues) {
@@ -87,16 +90,20 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setServerError(data?.error?.message ?? "Registration failed");
+        setServerError(
+          data?.error?.message ?? "Unable to create account. Please try again."
+        );
       } else {
         setSuccess(true);
         // Redirect to dashboard after successful registration
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          router.push("/dashboard");
         }, 1000);
       }
     } catch {
-      setServerError("Network error. Please try again.");
+      setServerError(
+        "Connection failed. Please check your internet and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -116,6 +123,7 @@ export default function RegisterPage() {
         />
 
         {/* Heading */}
+        <h1 className="h1 text-foreground text-center">Join Travel Tab</h1>
         <p className="mt-2 text-muted-foreground text-center">
           Create your account and start planning worry-free trips
         </p>
@@ -139,9 +147,20 @@ export default function RegisterPage() {
                 type="text"
                 className="mt-1 w-full rounded-lg border border-input bg-card px-3 py-2 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20 focus-visible:ring-[3px]"
                 placeholder="Enter your full name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                value={values.fullName}
+                aria-invalid={!!errors.fullName}
+                aria-describedby={
+                  errors.fullName ? "fullName-error" : undefined
+                }
+                onChange={(e) =>
+                  setValues((v) => ({ ...v, fullName: e.target.value }))
+                }
               />
+              {errors.fullName && (
+                <p id="fullName-error" className="mt-1 text-sm text-error">
+                  {errors.fullName}
+                </p>
+              )}
             </div>
 
             {/* Email */}
@@ -160,12 +179,15 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 value={values.email}
                 aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 onChange={(e) =>
                   setValues((v) => ({ ...v, email: e.target.value }))
                 }
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-error">{errors.email}</p>
+                <p id="email-error" className="mt-1 text-sm text-error">
+                  {errors.email}
+                </p>
               )}
             </div>
 
@@ -186,6 +208,9 @@ export default function RegisterPage() {
                   placeholder="Create a strong password"
                   value={values.password}
                   aria-invalid={!!errors.password}
+                  aria-describedby={
+                    errors.password ? "password-error" : "password-requirements"
+                  }
                   onChange={(e) =>
                     setValues((v) => ({ ...v, password: e.target.value }))
                   }
@@ -203,10 +228,21 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              {errors.password && (
+                <p id="password-error" className="mt-1 text-sm text-error">
+                  {errors.password}
+                </p>
+              )}
+              <p
+                id="password-requirements"
+                className="mt-1 text-xs text-muted-foreground"
+              >
                 Password must be at least 8 characters long
               </p>
-              <ul className="mt-2 grid grid-cols-2 gap-1 text-xs">
+              <ul
+                className="mt-2 grid grid-cols-2 gap-1 text-xs"
+                aria-label="Password requirements"
+              >
                 {[
                   {
                     id: "len",
@@ -277,6 +313,11 @@ export default function RegisterPage() {
                   placeholder="Confirm your password"
                   value={confirm}
                   aria-invalid={!!confirm && confirm !== values.password}
+                  aria-describedby={
+                    confirm && confirm !== values.password
+                      ? "confirm-error"
+                      : undefined
+                  }
                   onChange={(e) => setConfirm(e.target.value)}
                   autoCorrect="off"
                   autoCapitalize="none"
@@ -296,7 +337,7 @@ export default function RegisterPage() {
                 </button>
               </div>
               {confirm && confirm !== values.password && (
-                <p className="mt-1 text-sm text-error">
+                <p id="confirm-error" className="mt-1 text-sm text-error">
                   Passwords do not match
                 </p>
               )}

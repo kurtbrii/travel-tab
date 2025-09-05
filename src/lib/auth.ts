@@ -12,11 +12,13 @@ export async function getCurrentUser(): Promise<User | null> {
       return null
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "fallback-secret-change-in-production"
-    ) as User
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      console.error("JWT_SECRET environment variable is not set")
+      return null
+    }
 
+    const decoded = jwt.verify(token, jwtSecret) as User
     return decoded
   } catch (error) {
     return null

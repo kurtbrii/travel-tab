@@ -37,13 +37,22 @@ export async function POST(req: Request) {
     }
 
     // Create JWT token and set as httpOnly cookie
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      console.error("JWT_SECRET environment variable is not set")
+      return NextResponse.json(
+        { success: false, error: { code: "SERVER_ERROR", message: "Authentication configuration error" } },
+        { status: 500 }
+      )
+    }
+
     const token = jwt.sign(
       {
         userId: user.id,
         email: user.email,
         fullName: user.fullName
       },
-      process.env.JWT_SECRET || "fallback-secret-change-in-production",
+      jwtSecret,
       { expiresIn: "7d" }
     )
 

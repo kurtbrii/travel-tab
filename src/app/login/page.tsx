@@ -73,10 +73,10 @@ export default function LoginPage() {
       } else {
         setSuccess(true);
         // Redirect to dashboard after successful login
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
     } catch {
-      setServerError("Network error. Please try again.");
+      setServerError("Connection failed. Please check your internet and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -127,12 +127,13 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 value={values.email}
                 aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 onChange={(e) =>
                   setValues((v) => ({ ...v, email: e.target.value }))
                 }
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-error">{errors.email}</p>
+                <p id="email-error" className="mt-1 text-sm text-error">{errors.email}</p>
               )}
             </div>
 
@@ -153,6 +154,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   value={values.password}
                   aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, password: e.target.value }))
                   }
@@ -170,6 +172,9 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p id="password-error" className="mt-1 text-sm text-error">{errors.password}</p>
+              )}
               <div className="mt-2 flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm text-foreground">
                   <input

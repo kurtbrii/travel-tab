@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Trip } from "@/types";
@@ -7,8 +9,17 @@ interface TripCardProps {
 }
 
 function TripCard({ trip }: TripCardProps) {
+  const handleTripClick = () => {
+    // TODO: Implement trip detail view/navigation
+    alert(`Trip details for "${trip.title}" coming soon!`);
+  };
+
   return (
-    <div className="card shadow-card hover:shadow-lg transition-shadow">
+    <button
+      onClick={handleTripClick}
+      className="card shadow-card hover:shadow-lg transition-shadow w-full text-left cursor-pointer"
+      aria-label={`View details for ${trip.title} trip to ${trip.destination}`}
+    >
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="font-semibold text-lg text-foreground">
@@ -52,7 +63,7 @@ function TripCard({ trip }: TripCardProps) {
           ))}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
