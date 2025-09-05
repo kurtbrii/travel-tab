@@ -1,157 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import logo from "@/assets/travel-tab-logo.png";
 import ThemeToggle from "@/components/theme-toggle";
 import { getCurrentUser } from "@/lib/auth";
 import LogoutButton from "@/components/logout-button";
-
-function IconShield({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("size-5 text-primary", className)}
-      aria-hidden
-    >
-      <path
-        d="M12 3l7 3v5c0 4.418-3.582 8-8 8s-8-3.582-8-8V6l9-3z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 12l1.75 1.75L15 10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconSpark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("size-5 text-warning", className)}
-      aria-hidden
-    >
-      <path
-        d="M12 2l2.5 5 5 2.5-5 2.5-2.5 5-2.5-5L4.5 9.5 9.5 7 12 2z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconGlobe({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("size-5 text-success", className)}
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M3 12h18M12 3c3 3.5 3 14.5 0 18-3-3.5-3-14.5 0-18z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function IconCheck({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("size-5 text-success", className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M5 13l4 4L19 7"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        fill="none"
-      />
-    </svg>
-  );
-}
-
-function IconDoc({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("size-5 text-primary", className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path d="M7 3h6l5 5v13H7z" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M13 3v6h6" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 14h6M9 17h6" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function IconList({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("size-5 text-primary", className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <rect x="4" y="5" width="3" height="3" rx="1" fill="currentColor" />
-      <rect x="4" y="10.5" width="3" height="3" rx="1" fill="currentColor" />
-      <rect x="4" y="16" width="3" height="3" rx="1" fill="currentColor" />
-      <path
-        d="M10 6.5h10M10 12h10M10 17.5h10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function IconCalendar({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("size-5 text-primary", className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <rect
-        x="3"
-        y="5"
-        width="18"
-        height="16"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path d="M7 3v4M17 3v4M3 10h18" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
+import { IconShield, IconSpark, IconGlobe } from "@/components/icons";
+import { IconMapper } from "@/components/icons/icon-mapper";
+import { featuresData, stepsData } from "@/constants/data";
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -254,17 +110,7 @@ export default async function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded-full bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
-                  <svg
-                    className="w-3 h-3 text-primary"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
-                      fill="currentColor"
-                    />
-                  </svg>
+                  <IconGlobe className="w-3 h-3 text-primary" />
                 </div>
                 <span>200+ Countries</span>
               </div>
@@ -290,46 +136,24 @@ export default async function Home() {
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              icon: <IconShield className="text-primary" />,
-              title: "Visa Compliance",
-              body: "Get personalized visa requirements and entry guidelines based on your nationality, destination, and travel purpose.",
-            },
-            {
-              icon: <IconList className="text-primary" />,
-              title: "Smart Checklists",
-              body: "AI‑generated preparation checklists with time‑based deadlines to ensure you never miss important steps.",
-            },
-            {
-              icon: <IconDoc className="text-primary" />,
-              title: "Document Manager",
-              body: "Securely store and organize all your travel documents in one place with easy access when you need them.",
-            },
-            {
-              icon: <IconSpark className="text-warning" />,
-              title: "Expert Q&A",
-              body: "Ask specific questions about your travel requirements and get instant, personalized answers from our AI.",
-            },
-            {
-              icon: <IconCalendar className="text-primary" />,
-              title: "Trip Planning",
-              body: "Organize multiple trips with comprehensive planning tools for each destination and travel module.",
-            },
-            {
-              icon: <IconCheck className="text-success" />,
-              title: "Timeline Management",
-              body: "Never miss a deadline with intelligent scheduling that accounts for processing times and requirements.",
-            },
-          ].map((f) => (
-            <div key={f.title} className="card shadow-card">
+          {featuresData.map((feature) => (
+            <div key={feature.title} className="card shadow-card">
               <div className="flex items-start gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-                  {f.icon}
+                  <IconMapper
+                    iconName={feature.iconName}
+                    className={
+                      feature.iconName === "spark"
+                        ? "text-warning"
+                        : "text-primary"
+                    }
+                  />
                 </div>
                 <div>
-                  <h3 className="font-semibold">{f.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {feature.body}
+                  </p>
                 </div>
               </div>
             </div>
@@ -348,29 +172,15 @@ export default async function Home() {
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                num: 1,
-                title: "Create Your Trip",
-                desc: "Tell us about your destination, travel dates, and purpose. Our AI will understand your unique situation.",
-              },
-              {
-                num: 2,
-                title: "Get Your Brief",
-                desc: "Receive a personalized compliance report with visa requirements, document needs, and important notices.",
-              },
-              {
-                num: 3,
-                title: "Travel Ready",
-                desc: "Follow your personalized checklist, upload documents, and get ready for stress‑free travel.",
-              },
-            ].map((s) => (
-              <div key={s.title} className="card shadow-card">
+            {stepsData.map((step) => (
+              <div key={step.title} className="card shadow-card">
                 <div className="mb-2 inline-flex size-8 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary">
-                  {s.num}
+                  {step.num}
                 </div>
-                <h3 className="font-semibold">{s.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
+                <h3 className="font-semibold">{step.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {step.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -429,7 +239,7 @@ export default async function Home() {
           </nav>
         </div>
         <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Travel Tab. All rights reserved.
+          &copy; {new Date().getFullYear()} Travel Tab. All rights reserved.
         </div>
       </footer>
     </main>

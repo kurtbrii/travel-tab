@@ -1,11 +1,7 @@
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
+import { User } from "@/types"
 
-export interface User {
-  userId: string
-  email: string
-  fullName: string
-}
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
