@@ -2,6 +2,7 @@
 
 import { MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import StatusBadge from "@/components/ui/status-badge";
 import { Trip } from "@/types";
 
 interface TripCardProps {
@@ -17,7 +18,7 @@ function TripCard({ trip }: TripCardProps) {
   return (
     <button
       onClick={handleTripClick}
-      className="card shadow-card hover:shadow-lg transition-shadow w-full h-full min-h-[260px] text-left cursor-pointer"
+      className="card shadow-card hover:shadow-lg transition-all w-full h-full min-h-[260px] text-left cursor-pointer hover:scale-[1.005] active:scale-[0.99] animate-in fade-in-0"
       aria-label={`View details for ${trip.title} trip to ${trip.destination}`}
     >
       <div className="flex items-start justify-between mb-4">
@@ -30,24 +31,14 @@ function TripCard({ trip }: TripCardProps) {
             <span className="text-sm">{trip.destination}</span>
           </div>
         </div>
-        <span
-          className={cn(
-            "px-2 py-1 rounded-full text-xs font-medium",
-            trip.statusColor
-          )}
-        >
-          {trip.status}
-        </span>
+        <StatusBadge status={trip.status} />
       </div>
 
       <div className="flex items-center gap-1 mb-4 text-muted-foreground">
         <Calendar className="size-4" />
         <span className="text-sm">
-          {new Date(trip.startDate).toISOString().slice(0, 10)} - {new Date(
-            trip.endDate
-          )
-            .toISOString()
-            .slice(0, 10)}
+          {new Date(trip.startDate).toISOString().slice(0, 10)} -{" "}
+          {new Date(trip.endDate).toISOString().slice(0, 10)}
         </span>
       </div>
 

@@ -9,8 +9,11 @@ interface FormFieldProps {
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
   className?: string;
+  min?: string;
+  max?: string;
 }
 
 export function FormField({
@@ -20,8 +23,11 @@ export function FormField({
   placeholder,
   value,
   onChange,
+  onBlur,
   error,
   className,
+  min,
+  max,
 }: FormFieldProps) {
   return (
     <div className={className}>
@@ -41,6 +47,9 @@ export function FormField({
         value={value}
         aria-invalid={!!error}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        min={min}
+        max={max}
       />
       {error && <p className="mt-1 text-sm text-error">{error}</p>}
     </div>

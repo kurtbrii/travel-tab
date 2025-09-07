@@ -54,7 +54,7 @@ export default async function Dashboard() {
         </div>
 
         {/* Trips Grid (draggable) */}
-        <TripsGrid initialTrips={dummyTrips} />
+        <TripsGrid initialTrips={dummyTrips} currentUserId={user.id} />
       </div>
     </main>
   );

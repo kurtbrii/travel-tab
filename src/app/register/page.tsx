@@ -37,6 +37,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof FormValues, string>>
   >({});
+  const [touched, setTouched] = React.useState<Partial<Record<keyof FormValues, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
@@ -55,6 +56,34 @@ export default function RegisterPage() {
     const confirmValid = pass === confirm;
     return baseValid && nameValid && confirmValid;
   }, [values.email, values.password, values.fullName, confirm]);
+
+  const getError = (field: keyof FormValues) => {
+    return touched[field] ? errors[field] : undefined;
+  };
+
+  const handleBlur = (field: keyof FormValues) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    
+    // Validate the field
+    const result = registerSchema.safeParse({
+      ...values,
+      [field]: field === 'email' ? values.email.trim() : 
+               field === 'password' ? values.password : values.fullName
+    });
+    
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
+      for (const issue of result.error.issues) {
+        const path = issue.path[0] as keyof FormValues | undefined;
+        if (path === field) fieldErrors[path] = issue.message;
+      }
+      setErrors(fieldErrors);
+    } else if (errors[field]) {
+      // Clear error if validation passes
+      const { [field]: _, ...rest } = errors;
+      setErrors(rest);
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -148,17 +177,16 @@ export default function RegisterPage() {
                 className="mt-1 w-full rounded-lg border border-input bg-card px-3 py-2 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20 focus-visible:ring-[3px]"
                 placeholder="Enter your full name"
                 value={values.fullName}
-                aria-invalid={!!errors.fullName}
-                aria-describedby={
-                  errors.fullName ? "fullName-error" : undefined
-                }
+                aria-invalid={!!getError('fullName')}
+                aria-describedby={getError('fullName') ? "fullName-error" : undefined}
                 onChange={(e) =>
                   setValues((v) => ({ ...v, fullName: e.target.value }))
                 }
+                onBlur={() => handleBlur('fullName')}
               />
-              {errors.fullName && (
+              {getError('fullName') && (
                 <p id="fullName-error" className="mt-1 text-sm text-error">
-                  {errors.fullName}
+                  {getError('fullName')}
                 </p>
               )}
             </div>
@@ -172,21 +200,22 @@ export default function RegisterPage() {
                 type="email"
                 className={cn(
                   "mt-1 w-full rounded-lg border bg-card px-3 py-2 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px]",
-                  errors.email
+                  getError('email')
                     ? "border-error focus-visible:ring-error/20"
                     : "border-input focus-visible:border-primary focus-visible:ring-primary/20"
                 )}
                 placeholder="you@example.com"
                 value={values.email}
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "email-error" : undefined}
+                aria-invalid={!!getError('email')}
+                aria-describedby={getError('email') ? "email-error" : undefined}
                 onChange={(e) =>
                   setValues((v) => ({ ...v, email: e.target.value }))
                 }
+                onBlur={() => handleBlur('email')}
               />
-              {errors.email && (
+              {getError('email') && (
                 <p id="email-error" className="mt-1 text-sm text-error">
-                  {errors.email}
+                  {getError('email')}
                 </p>
               )}
             </div>
@@ -201,19 +230,18 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   className={cn(
                     "mt-1 w-full rounded-lg border bg-card px-3 py-2 pr-10 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px]",
-                    errors.password
+                    getError('password')
                       ? "border-error focus-visible:ring-error/20"
                       : "border-input focus-visible:border-primary focus-visible:ring-primary/20"
                   )}
                   placeholder="Create a strong password"
                   value={values.password}
-                  aria-invalid={!!errors.password}
-                  aria-describedby={
-                    errors.password ? "password-error" : "password-requirements"
-                  }
+                  aria-invalid={!!getError('password')}
+                  aria-describedby={getError('password') ? "password-error" : "password-requirements"}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, password: e.target.value }))
                   }
+                  onBlur={() => handleBlur('password')}
                 />
                 <button
                   type="button"
@@ -228,9 +256,9 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              {errors.password && (
+              {getError('password') && (
                 <p id="password-error" className="mt-1 text-sm text-error">
-                  {errors.password}
+                  {getError('password')}
                 </p>
               )}
               <p
@@ -322,6 +350,7 @@ export default function RegisterPage() {
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
+                  onBlur={() => handleBlur('password')}
                 />
                 <button
                   type="button"

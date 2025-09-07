@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [remember, setRemember] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [touched, setTouched] = React.useState<Partial<Record<keyof FormValues, boolean>>>({});
 
   const canSubmit = React.useMemo(() => {
     const parsed = loginSchema.safeParse({
@@ -35,6 +36,31 @@ export default function LoginPage() {
     });
     return parsed.success;
   }, [values.email, values.password]);
+
+  const getError = (field: keyof FormValues) => {
+    return touched[field] ? errors[field] : undefined;
+  };
+
+  const handleBlur = (field: keyof FormValues) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+    const result = loginSchema.safeParse({
+      ...values,
+      [field]: field === "email" ? values.email.trim() : values.password,
+    });
+
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof FormValues, string>> = {};
+      for (const issue of result.error.issues) {
+        const path = issue.path[0] as keyof FormValues | undefined;
+        if (path === field) fieldErrors[path] = issue.message;
+      }
+      setErrors(fieldErrors);
+    } else if (errors[field]) {
+      const { [field]: _, ...rest } = errors;
+      setErrors(rest);
+    }
+  };
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -72,7 +98,6 @@ export default function LoginPage() {
         setServerError(data?.error?.message ?? "Sign in failed");
       } else {
         setSuccess(true);
-        // Redirect to dashboard after successful login
         router.push("/dashboard");
       }
     } catch {
@@ -120,20 +145,23 @@ export default function LoginPage() {
                 type="email"
                 className={cn(
                   "mt-1 w-full rounded-lg border bg-card px-3 py-2 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px]",
-                  errors.email
+                  getError("email")
                     ? "border-error focus-visible:ring-error/20"
                     : "border-input focus-visible:border-primary focus-visible:ring-primary/20"
                 )}
                 placeholder="you@example.com"
                 value={values.email}
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "email-error" : undefined}
+                aria-invalid={!!getError("email")}
+                aria-describedby={getError("email") ? "email-error" : undefined}
                 onChange={(e) =>
                   setValues((v) => ({ ...v, email: e.target.value }))
                 }
+                onBlur={() => handleBlur("email")}
               />
-              {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-error">{errors.email}</p>
+              {getError("email") && (
+                <p id="email-error" className="mt-1 text-sm text-error">
+                  {getError("email")}
+                </p>
               )}
             </div>
 
@@ -147,17 +175,18 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   className={cn(
                     "mt-1 w-full rounded-lg border bg-card px-3 py-2 pr-10 text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px]",
-                    errors.password
+                    getError("password")
                       ? "border-error focus-visible:ring-error/20"
                       : "border-input focus-visible:border-primary focus-visible:ring-primary/20"
                   )}
                   placeholder="Enter your password"
                   value={values.password}
-                  aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? "password-error" : undefined}
+                  aria-invalid={!!getError("password")}
+                  aria-describedby={getError("password") ? "password-error" : undefined}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, password: e.target.value }))
                   }
+                  onBlur={() => handleBlur("password")}
                 />
                 <button
                   type="button"
@@ -172,8 +201,10 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
-              {errors.password && (
-                <p id="password-error" className="mt-1 text-sm text-error">{errors.password}</p>
+              {getError("password") && (
+                <p id="password-error" className="mt-1 text-sm text-error">
+                  {getError("password")}
+                </p>
               )}
               <div className="mt-2 flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm text-foreground">

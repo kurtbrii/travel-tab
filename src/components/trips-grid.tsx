@@ -21,35 +21,19 @@ import {
   SortableContext,
   arrayMove,
   rectSortingStrategy,
-  useSortable,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import SortableTrip from "@/components/trips/sortable-trip";
 
 interface TripsGridProps {
   initialTrips: Trip[];
+  currentUserId: string;
 }
 
-function SortableTrip({ trip }: { trip: Trip }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: trip.id });
-
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    // Lift the dragging item a bit so it appears above others.
-    zIndex: isDragging ? 30 : undefined,
-    opacity: isDragging ? 0.5 : undefined,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TripCard trip={trip} />
-    </div>
-  );
-}
-
-export default function TripsGrid({ initialTrips }: TripsGridProps) {
+export default function TripsGrid({
+  initialTrips,
+  currentUserId,
+}: TripsGridProps) {
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -140,14 +124,20 @@ export default function TripsGrid({ initialTrips }: TripsGridProps) {
           <>
             <SortableContext items={items} strategy={rectSortingStrategy}>
               {trips.map((trip) => (
-                <div key={trip.id} className="h-full">
+                <div
+                  key={trip.id}
+                  className="h-full animate-in fade-in-0 zoom-in-95"
+                >
                   <SortableTrip trip={trip} />
                 </div>
               ))}
             </SortableContext>
             {/* Add card follows the last trip, not draggable */}
-            <div aria-hidden className="h-full">
-              <AddTripCard />
+            <div className="h-full">
+              <AddTripCard
+                currentUserId={currentUserId}
+                onAddTrip={(t) => setTrips((prev) => [...prev, t])}
+              />
             </div>
           </>
         ) : (
@@ -178,7 +168,9 @@ export default function TripsGrid({ initialTrips }: TripsGridProps) {
       </div>
 
       {/* Floating preview while dragging */}
-      <DragOverlay dropAnimation={{ duration: 150, easing: "cubic-bezier(.2,.8,.2,1)" }}>
+      <DragOverlay
+        dropAnimation={{ duration: 150, easing: "cubic-bezier(.2,.8,.2,1)" }}
+      >
         {activeTrip ? (
           <div className="scale-[1.02] shadow-2xl">
             <TripCard trip={activeTrip} />
