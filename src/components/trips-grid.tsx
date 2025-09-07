@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import TripCard from "@/components/trip-card";
 import { AddTripCard } from "@/components/add-trip-card";
 import { Trip } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
+import TripSkeleton from "@/components/trips/trip-skeleton";
 import {
   DndContext,
   DragOverlay,
@@ -124,15 +124,11 @@ export default function TripsGrid({
           <>
             <SortableContext items={items} strategy={rectSortingStrategy}>
               {trips.map((trip) => (
-                <div
-                  key={trip.id}
-                  className="h-full animate-in fade-in-0 zoom-in-95"
-                >
+                <div key={trip.id} className="h-full animate-in fade-in-0 zoom-in-95">
                   <SortableTrip trip={trip} />
                 </div>
               ))}
             </SortableContext>
-            {/* Add card follows the last trip, not draggable */}
             <div className="h-full">
               <AddTripCard
                 currentUserId={currentUserId}
@@ -141,27 +137,9 @@ export default function TripsGrid({
             </div>
           </>
         ) : (
-          // Skeleton loading placeholders (pretty + efficient)
           <>
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card shadow-card h-full min-h-[260px]">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <Skeleton className="h-4 w-40 mb-2" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-20" />
-                  <Skeleton className="h-5 w-14" />
-                </div>
-              </div>
+              <TripSkeleton key={i} />
             ))}
           </>
         )}

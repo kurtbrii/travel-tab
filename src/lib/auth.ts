@@ -18,8 +18,18 @@ export async function getCurrentUser(): Promise<User | null> {
       return null
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as User
-    return decoded
+    const decoded = jwt.verify(token, jwtSecret) as any
+    // Support tokens that use either `id` or `userId`
+    const id = decoded?.id ?? decoded?.userId
+    if (!id) return null
+
+    // Return a minimal user shape; other fields may be undefined at runtime
+    const user: Partial<User> = {
+      id,
+      email: decoded?.email,
+      fullName: decoded?.fullName,
+    }
+    return user as User
   } catch (error) {
     return null
   }

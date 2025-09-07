@@ -6,6 +6,7 @@ import AddTripModal from "@/components/add-trip/add-trip-modal";
 import AddTripForm from "@/components/add-trip/add-trip-form";
 import { Trip } from "@/types";
 import { tripSchema } from "@/lib/validation";
+import { Loader2 } from "lucide-react";
 
 interface AddTripCardProps {
   onAddTrip: (trip: Trip) => void;
@@ -20,6 +21,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
   const [endDate, setEndDate] = useState("");
   const [errors, setErrors] = useState<{ [k: string]: string | undefined }>({});
   const [touched, setTouched] = useState<{ [k: string]: boolean }>({});
+  const [isCreating, setIsCreating] = useState(false);
 
   // Check if the form is valid
   const isValid = useMemo(() => {
@@ -46,6 +48,8 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
   }, []);
 
   const handleSubmit = useCallback(async () => {
+    setIsCreating(true);
+
     // Mark all fields as touched to show errors
     const allTouched = {
       title: true,
@@ -69,28 +73,57 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
         fieldErrors[path] = issue.message;
       }
       setErrors(fieldErrors);
+      setIsCreating(false);
       return;
     }
 
-    const newTrip: Trip = {
-      id: String(Date.now()),
-      title: title.trim(),
-      destination: destination.trim(),
-      startDate,
-      endDate,
-      status: "Planning",
-      statusColor:
-        "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
-      modules: [],
-      userId: currentUserId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    try {
+      const response = await fetch("/api/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          destination: destination.trim(),
+          startDate,
+          endDate,
+          status: "Planning",
+          statusColor:
+            "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
+          modules: [],
+        }),
+        credentials: "include",
+      });
 
-    onAddTrip(newTrip);
-    setOpen(false);
-    reset();
-  }, [title, destination, startDate, endDate, currentUserId, onAddTrip, reset]);
+      if (!response.ok) {
+        // Try to parse server error for better messaging
+        let serverMessage = "";
+        try {
+          const data = await response.json();
+          serverMessage = (data?.error as string) || (data?.message as string) || (data?.details as string) || "";
+        } catch {
+          // ignore JSON parse errors
+        }
+
+        if (response.status === 401) {
+          alert("Please sign in to create a trip.");
+        } else if (response.status === 400) {
+          alert(serverMessage || "Missing or invalid fields.");
+        } else {
+          alert(serverMessage || "Failed to create trip. Please try again.");
+        }
+        return;
+      }
+
+      const createdTrip = await response.json();
+      onAddTrip(createdTrip);
+      setOpen(false);
+      reset();
+    } catch (error) {
+      console.error("Error creating trip:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [title, destination, startDate, endDate, onAddTrip, reset]);
 
   return (
     <>
@@ -141,10 +174,21 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!isValid}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-primary ${!isValid ? 'opacity-60 cursor-not-allowed' : 'hover:bg-primary/90'}`}
+              disabled={!isValid || isCreating}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-primary ${
+                !isValid || isCreating
+                  ? "opacity-60 cursor-not-allowed"
+                  : "hover:bg-primary/90"
+              }`}
             >
-              Create Trip
+              {isCreating ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin" />
+                  Creating Trip...
+                </span>
+              ) : (
+                "Create Trip"
+              )}
             </button>
           </div>
         }
