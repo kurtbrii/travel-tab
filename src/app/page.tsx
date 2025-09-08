@@ -1,64 +1,18 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/travel-tab-logo.png";
-import ThemeToggle from "@/components/theme-toggle";
 import { getCurrentUser } from "@/lib/auth";
-import LogoutButton from "@/components/logout-button";
 import { IconShield, IconSpark, IconGlobe } from "@/components/icons";
 import { IconMapper } from "@/components/icons/icon-mapper";
 import { featuresData, stepsData } from "@/constants/data";
+import Navbar from "@/components/navbar";
+import Image from "next/image";
+import logo from "@/assets/travel-tab-logo.png";
 
 export default async function Home() {
   const user = await getCurrentUser();
   return (
     <main className="min-h-screen bg-background">
-      {/* Top Bar / Header */}
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src={logo}
-              alt="Travel Tab logo"
-              className="rounded-md"
-              width={120}
-              height={120}
-              priority
-            />
-          </Link>
-          <nav className="flex items-center gap-2">
-            <ThemeToggle />
-            {user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
-                  Welcome, {user.fullName}
-                </span>
-                <Button
-                  asChild
-                  size="sm"
-                  className="bg-primary text-primary-foreground"
-                >
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <LogoutButton />
-              </div>
-            ) : (
-              <>
-                <Button asChild variant="ghost" className="px-3">
-                  <Link href="/login">Sign In</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className="bg-primary text-primary-foreground"
-                >
-                  <Link href="/register">Get Started</Link>
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <Navbar context="home" />
 
       {/* Hero */}
       <section className="relative">
