@@ -1,0 +1,111 @@
+import { prisma } from "@/lib/db";
+import type { Trip as TripType } from "@/types";
+import { tripSchema } from "@/lib/validation";
+
+// Status mapping between DB enum and UI strings
+export const toDisplayStatus = (status: string | null | undefined): TripType["status"] => {
+  switch (status) {
+    case "Ready_to_Go":
+      return "Ready to Go";
+    case "In_Progress":
+      return "In Progress";
+    case "Completed":
+      return "Completed";
+    case "Planning":
+    default:
+      return "Planning";
+  }
+};
+
+export const fromDisplayStatus = (status: string | null | undefined): string => {
+  switch (status) {
+    case "Ready to Go":
+      return "Ready_to_Go";
+    case "In Progress":
+      return "In_Progress";
+    case "Completed":
+      return "Completed";
+    case "Planning":
+    default:
+      return "Planning";
+  }
+};
+
+// Serialize Prisma Trip to UI Trip type
+export function serializeTrip(t: any): TripType {
+  return {
+    id: t.id,
+    title: t.title,
+    destination: t.destination,
+    startDate: new Date(t.startDate).toISOString(),
+    endDate: new Date(t.endDate).toISOString(),
+    status: toDisplayStatus(t.status as any),
+    statusColor:
+      t.statusColor ||
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
+    modules: Array.isArray(t.modules) ? t.modules : [],
+    userId: t.userId,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  } as TripType;
+}
+
+// Read operations
+export async function getTripsByUser(userId: string): Promise<TripType[]> {
+  const trips = await prisma.trip.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+  return trips.map(serializeTrip);
+}
+
+// Create operation
+export interface CreateTripInput {
+  title: string;
+  destination: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  status?: TripType["status"];
+  statusColor?: string;
+  modules?: string[];
+}
+
+export async function createTrip(userId: string, input: CreateTripInput): Promise<TripType> {
+  // Validate base fields using zod schema (same as client form)
+  const parsed = tripSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues?.[0]?.message || "Invalid trip data";
+    throw new Error(message);
+  }
+
+  const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!isoDateRegex.test(input.startDate) || !isoDateRegex.test(input.endDate)) {
+    throw new Error("Invalid date format. Use YYYY-MM-DD.");
+  }
+  const start = new Date(`${input.startDate}T00:00:00.000Z`);
+  const end = new Date(`${input.endDate}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    throw new Error("Invalid date values.");
+  }
+  if (end < start) {
+    throw new Error("End date must be after start date");
+  }
+
+  const created = await prisma.trip.create({
+    data: {
+      title: input.title.trim(),
+      destination: input.destination.trim(),
+      startDate: start,
+      endDate: end,
+      status: fromDisplayStatus(input.status || "Planning") as any,
+      statusColor:
+        input.statusColor ||
+        "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
+      modules: input.modules || [],
+      userId,
+    },
+  });
+
+  return serializeTrip(created);
+}
+
