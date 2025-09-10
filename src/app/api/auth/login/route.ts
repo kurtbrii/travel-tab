@@ -1,15 +1,12 @@
 // src/app/api/auth/login/route.ts
 import { NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-import { cookies } from "next/headers"
-import { prisma } from "@/lib/db"
-import { loginSchema } from "@/lib/validation"
+import { LoginInput as LoginDto } from "@/server/contracts/auth.dto"
+import { AuthService } from "@/server/services/auth.service"
 
 export async function POST(req: Request) {
   try {
     const json = await req.json()
-    const parsed = loginSchema.safeParse(json)
+    const parsed = LoginDto.safeParse(json)
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -18,55 +15,22 @@ export async function POST(req: Request) {
       )
     }
 
-    const { email, password } = parsed.data
-    const user = await prisma.user.findUnique({ where: { email } })
-
-    if (!user) {
+    const result = await AuthService.login(parsed.data)
+    if (!result.ok) {
       return NextResponse.json(
         { success: false, error: { code: "INVALID_CREDENTIALS", message: "Invalid credentials" } },
         { status: 401 }
       )
     }
-
-    const validPassword = await bcrypt.compare(password, user.hashedPassword)
-    if (!validPassword) {
-      return NextResponse.json(
-        { success: false, error: { code: "INVALID_CREDENTIALS", message: "Invalid credentials" } },
-        { status: 401 }
-      )
-    }
-
-    // Create JWT token and set as httpOnly cookie
-    const jwtSecret = process.env.JWT_SECRET
-    if (!jwtSecret) {
-      console.error("JWT_SECRET environment variable is not set")
-      return NextResponse.json(
-        { success: false, error: { code: "SERVER_ERROR", message: "Authentication configuration error" } },
-        { status: 500 }
-      )
-    }
-
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        fullName: user.fullName
-      },
-      jwtSecret,
-      {
-        expiresIn: "7d",
-        algorithm: 'HS256' // Explicit algorithm for security
-      }
-    )
 
     const response = NextResponse.json({
       success: true,
       data: {
         user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName,
-          createdAt: user.createdAt
+          id: result.user.id,
+          email: result.user.email,
+          fullName: result.user.fullName,
+          createdAt: result.user.createdAt
         }
       },
       meta: { timestamp: new Date().toISOString() },
@@ -74,7 +38,7 @@ export async function POST(req: Request) {
 
     response.cookies.set({
       name: 'auth-token',
-      value: token,
+      value: result.token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

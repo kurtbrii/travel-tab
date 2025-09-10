@@ -124,10 +124,12 @@ export default function RegisterPage() {
         );
       } else {
         setSuccess(true);
-        // Redirect to dashboard after successful registration
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
+        // Full navigation ensures Set-Cookie is applied before the next request
+        if (typeof window !== 'undefined') {
+          window.location.href = "/dashboard";
+        } else {
+          router.replace("/dashboard");
+        }
       }
     } catch {
       setServerError(

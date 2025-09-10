@@ -11,6 +11,10 @@ interface NavbarProps {
   context?: "home" | "dashboard";
 }
 
+// Ensure user state in Navbar reflects current cookies
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Navbar({ context = "dashboard" }: NavbarProps) {
   const user = await getCurrentUser();
 
@@ -57,4 +61,3 @@ export default async function Navbar({ context = "dashboard" }: NavbarProps) {
     </header>
   );
 }
-

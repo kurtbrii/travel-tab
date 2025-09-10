@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server"
 
 export async function POST() {
-  const response = NextResponse.json({
-    success: true,
-    message: "Logged out successfully"
-  })
+  // 204 No Content per story spec
+  const response = new NextResponse(null, { status: 204 })
 
   // Clear the auth token cookie
   response.cookies.set("auth-token", "", {

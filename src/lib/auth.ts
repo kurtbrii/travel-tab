@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { User } from "@/types"
+import { Env } from "@/server/config/env"
 
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -12,13 +13,7 @@ export async function getCurrentUser(): Promise<User | null> {
       return null
     }
 
-    const jwtSecret = process.env.JWT_SECRET
-    if (!jwtSecret) {
-      console.error("JWT_SECRET environment variable is not set")
-      return null
-    }
-
-    const decoded = jwt.verify(token, jwtSecret) as any
+    const decoded = jwt.verify(token, Env.jwtSecret()) as any
     // Support tokens that use either `id` or `userId`
     const id = decoded?.id ?? decoded?.userId
     if (!id) return null

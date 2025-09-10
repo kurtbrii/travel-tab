@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { AuthService } from "@/server/services/auth.service";
 import { redirect } from "next/navigation";
 import TripsGrid from "@/components/trips-grid";
 import { Suspense } from "react";
@@ -6,8 +6,12 @@ import Loading from "./loading";
 import { getTripsByUser } from "@/lib/trips";
 import Navbar from "@/components/navbar";
 
+// Avoid caching; must evaluate auth on every request
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Dashboard() {
-  const user = await getCurrentUser();
+  const user = await AuthService.getCurrentUser();
 
   if (!user) {
     redirect("/login");

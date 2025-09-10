@@ -98,7 +98,12 @@ export default function LoginPage() {
         setServerError(data?.error?.message ?? "Sign in failed");
       } else {
         setSuccess(true);
-        router.push("/dashboard");
+        // Use full navigation to ensure cookie is applied before the next request
+        if (typeof window !== 'undefined') {
+          window.location.href = "/dashboard";
+        } else {
+          router.replace("/dashboard");
+        }
       }
     } catch {
       setServerError("Connection failed. Please check your internet and try again.");
