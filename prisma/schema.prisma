@@ -21,6 +21,9 @@ model Trip {
   id          String   @id @default(cuid())
   title       String
   destination String
+  // New fields aligning with story US-001
+  purpose             String?
+  destinationCountry  String?
   startDate   DateTime
   endDate     DateTime
   status      TripStatus @default(Planning)

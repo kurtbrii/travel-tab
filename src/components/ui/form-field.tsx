@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 interface FormFieldProps {
   label: string;
   icon?: React.ReactNode;
   type?: string;
   placeholder?: string;
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
@@ -21,6 +22,7 @@ export function FormField({
   icon,
   type = "text",
   placeholder,
+  id,
   value,
   onChange,
   onBlur,
@@ -29,9 +31,16 @@ export function FormField({
   min,
   max,
 }: FormFieldProps) {
+  const reactId = useId();
+  const slug = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  const inputId = id || `${slug}-${reactId}`;
+  const errorId = `${inputId}-error`;
   return (
     <div className={className}>
-      <label className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
+      <label htmlFor={inputId} className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
         {icon}
         {label}
       </label>
@@ -46,12 +55,18 @@ export function FormField({
         placeholder={placeholder}
         value={value}
         aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
+        id={inputId}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         min={min}
         max={max}
       />
-      {error && <p className="mt-1 text-sm text-error">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" aria-live="polite" className="mt-1 text-sm text-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -73,6 +88,13 @@ export function PasswordField({
   onTogglePassword,
 }: PasswordFieldProps) {
   const [internalShowPassword, setInternalShowPassword] = useState(false);
+  const reactId = useId();
+  const slug = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  const inputId = `${slug}-${reactId}`;
+  const errorId = `${inputId}-error`;
 
   const isPasswordVisible = onTogglePassword
     ? showPassword
@@ -82,7 +104,7 @@ export function PasswordField({
 
   return (
     <div className={className}>
-      <label className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
+      <label htmlFor={inputId} className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
         {icon}
         {label}
       </label>
@@ -98,6 +120,8 @@ export function PasswordField({
           placeholder={placeholder}
           value={value}
           aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
+          id={inputId}
           onChange={(e) => onChange(e.target.value)}
         />
         <button
@@ -113,7 +137,11 @@ export function PasswordField({
           )}
         </button>
       </div>
-      {error && <p className="mt-1 text-sm text-error">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" aria-live="polite" className="mt-1 text-sm text-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

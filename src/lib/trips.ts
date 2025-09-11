@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { Trip as TripType } from "@/types";
 import { tripSchema } from "@/lib/validation";
+import { toCountryName, isValidAlpha2 } from "@/lib/iso-countries";
 
 // Status mapping between DB enum and UI strings
 export const toDisplayStatus = (status: string | null | undefined): TripType["status"] => {
@@ -35,8 +36,9 @@ export const fromDisplayStatus = (status: string | null | undefined): string => 
 export function serializeTrip(t: any): TripType {
   return {
     id: t.id,
-    title: t.title,
-    destination: t.destination,
+    // New fields with fallbacks for legacy data
+    purpose: t.purpose || t.title || "",
+    destinationCountry: (t.destinationCountry || t.destination || "").toString(),
     startDate: new Date(t.startDate).toISOString(),
     endDate: new Date(t.endDate).toISOString(),
     status: toDisplayStatus(t.status as any),
@@ -61,8 +63,8 @@ export async function getTripsByUser(userId: string): Promise<TripType[]> {
 
 // Create operation
 export interface CreateTripInput {
-  title: string;
-  destination: string;
+  destinationCountry: string; // ISO alpha-2
+  purpose: string;            // 3-100 chars
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
   status?: TripType["status"];
@@ -76,6 +78,9 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
   if (!parsed.success) {
     const message = parsed.error.issues?.[0]?.message || "Invalid trip data";
     throw new Error(message);
+  }
+  if (!isValidAlpha2(parsed.data.destinationCountry)) {
+    throw new Error("Invalid destination country code.");
   }
 
   const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -93,8 +98,12 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
 
   const created = await prisma.trip.create({
     data: {
-      title: input.title.trim(),
-      destination: input.destination.trim(),
+      // Keep legacy fields populated for backward compatibility
+      title: input.purpose.trim(),
+      destination: toCountryName(input.destinationCountry.trim()),
+      // New fields per story
+      purpose: input.purpose.trim(),
+      destinationCountry: input.destinationCountry.trim().toUpperCase(),
       startDate: start,
       endDate: end,
       status: fromDisplayStatus(input.status || "Planning") as any,
@@ -108,4 +117,3 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
 
   return serializeTrip(created);
 }
-

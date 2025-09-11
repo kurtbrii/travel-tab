@@ -35,7 +35,7 @@ export default async function Home() {
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
               {user ? (
                 <Button asChild size="lg" className="px-8">
-                  <Link href="/dashboard">Go to Dashboard →</Link>
+                  <Link href="/trips">Go to Trips →</Link>
                 </Button>
               ) : (
                 <>

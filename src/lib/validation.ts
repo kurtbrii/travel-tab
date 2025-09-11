@@ -21,14 +21,21 @@ export const loginSchema = z.object({
 });
 
 export const tripSchema = z.object({
-  title: z.string().min(10, "Title must be at least 10 characters"),
-  destination: z.string().min(3, "Destination must be at least 3 characters"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
-}).refine((data) => {
-  if (!data.startDate || !data.endDate) return true;
-  return new Date(data.startDate) <= new Date(data.endDate);
-}, {
-  message: "End date must be after start date",
-  path: ["endDate"],
-});
+  destinationCountry: z
+    .string()
+    .length(2, { message: 'Use ISO alpha-2 code (e.g., US)' })
+    .regex(/^[A-Za-z]{2}$/, { message: 'Use ISO alpha-2 letters only' })
+    .transform((s) => s.toUpperCase()),
+  purpose: z
+    .string()
+    .min(3, { message: 'Purpose must be at least 3 characters' })
+    .max(100, { message: 'Purpose must be at most 100 characters' }),
+  startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().min(1, 'End date is required'),
+}).refine(
+  (data) => {
+    if (!data.startDate || !data.endDate) return true
+    return new Date(data.startDate) <= new Date(data.endDate)
+  },
+  { message: 'End date must be after start date', path: ['endDate'] }
+)

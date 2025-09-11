@@ -74,7 +74,7 @@ describe('RegisterPage UI', () => {
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument()
   })
 
-  it('submits and redirects to /dashboard on success', async () => {
+  it('submits and redirects to /trips on success', async () => {
     render(<RegisterPage />)
 
     await user.type(screen.getByPlaceholderText(/enter your full name/i), 'Alice Anderson')
@@ -88,7 +88,7 @@ describe('RegisterPage UI', () => {
     await user.click(submit)
 
     await waitFor(() => {
-      expect((window as any).location.href).toBe('/dashboard')
+      expect((window as any).location.href).toBe('/trips')
     })
 
     expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({ method: 'POST' }))

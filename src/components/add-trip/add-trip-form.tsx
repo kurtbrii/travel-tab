@@ -1,20 +1,21 @@
 "use client";
 
-import { Calendar, MapPin, Type } from "lucide-react";
+import { Calendar, MapPin, ClipboardList } from "lucide-react";
 import { FormField } from "@/components/ui/form-field";
 import { useEffect } from "react";
 import { z } from "zod";
 import { tripSchema } from "@/lib/validation";
+import { toCountryName } from "@/lib/iso-countries";
 
 interface AddTripFormProps {
-  title: string;
-  destination: string;
+  purpose: string;
+  destinationCountry: string;
   startDate: string;
   endDate: string;
   errors: { [k: string]: string | undefined };
   onChange: {
-    setTitle: (v: string) => void;
-    setDestination: (v: string) => void;
+    setPurpose: (v: string) => void;
+    setDestinationCountry: (v: string) => void;
     setStartDate: (v: string) => void;
     setEndDate: (v: string) => void;
     setErrors: (errors: { [k: string]: string | undefined }) => void;
@@ -24,8 +25,8 @@ interface AddTripFormProps {
 }
 
 export default function AddTripForm({
-  title,
-  destination,
+  purpose,
+  destinationCountry,
   startDate,
   endDate,
   errors,
@@ -50,14 +51,14 @@ export default function AddTripForm({
     onFieldBlur(field);
     
     // Only validate if the field is touched and has a value
-    if (touched[field] && (field === 'title' ? title : field === 'destination' ? destination : field === 'startDate' ? startDate : endDate)) {
+    if (touched[field] && (field === 'purpose' ? purpose : field === 'destinationCountry' ? destinationCountry : field === 'startDate' ? startDate : endDate)) {
       const result = tripSchema.safeParse({
-        title,
-        destination,
+        purpose,
+        destinationCountry,
         startDate,
         endDate,
-        [field]: field === 'title' ? title : 
-                field === 'destination' ? destination : 
+        [field]: field === 'purpose' ? purpose : 
+                field === 'destinationCountry' ? destinationCountry : 
                 field === 'startDate' ? startDate : endDate
       });
 
@@ -81,22 +82,22 @@ export default function AddTripForm({
   return (
     <div className="p-5 space-y-4">
       <FormField
-        label="Title"
-        icon={<Type className="size-4" />}
-        value={title}
-        onChange={onChange.setTitle}
-        onBlur={() => handleBlur('title')}
-        placeholder="e.g., Tokyo Business Trip"
-        error={getError('title')}
+        label="Purpose"
+        icon={<ClipboardList className="size-4" />}
+        value={purpose}
+        onChange={onChange.setPurpose}
+        onBlur={() => handleBlur('purpose')}
+        placeholder="e.g., Business meeting, Tourism"
+        error={getError('purpose')}
       />
       <FormField
-        label="Destination"
+        label="Destination Country (ISO code)"
         icon={<MapPin className="size-4" />}
-        value={destination}
-        onChange={onChange.setDestination}
-        onBlur={() => handleBlur('destination')}
-        placeholder="City, Country"
-        error={getError('destination')}
+        value={destinationCountry}
+        onChange={(v) => onChange.setDestinationCountry(v.toUpperCase())}
+        onBlur={() => handleBlur('destinationCountry')}
+        placeholder="e.g., US, CA, GB, JP"
+        error={getError('destinationCountry')}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField

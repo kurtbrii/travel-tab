@@ -34,12 +34,14 @@ export async function POST(request: Request) {
     return NextResponse.json(trip, { status: 201 });
   } catch (error: any) {
     console.error('Error creating trip:', error);
+    const msg = String(error?.message || error || '');
+    const isValidation = /invalid|end date|start date|iso|code/i.test(msg);
     return NextResponse.json(
       {
-        error: 'Failed to create trip',
-        ...(process.env.NODE_ENV !== 'production' && { details: String(error?.message || error) }),
+        error: isValidation ? 'Missing or invalid fields' : 'Failed to create trip',
+        ...(process.env.NODE_ENV !== 'production' && { details: msg }),
       },
-      { status: 500 }
+      { status: isValidation ? 400 : 500 }
     );
   }
 }

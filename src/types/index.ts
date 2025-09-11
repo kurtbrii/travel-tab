@@ -10,8 +10,12 @@ export interface User {
 // Trip types
 export interface Trip {
   id: string;
-  title: string;
-  destination: string;
+  // Story-aligned fields
+  purpose: string;
+  destinationCountry: string; // ISO alpha-2
+  // Legacy display fields (kept for compatibility where needed)
+  title?: string;
+  destination?: string;
   startDate: string;
   endDate: string;
   status: TripStatus;

@@ -6,6 +6,7 @@ import AddTripModal from "@/components/add-trip/add-trip-modal";
 import AddTripForm from "@/components/add-trip/add-trip-form";
 import { Trip } from "@/types";
 import { tripSchema } from "@/lib/validation";
+import { toCountryName } from "@/lib/iso-countries";
 import { Loader2 } from "lucide-react";
 
 interface AddTripCardProps {
@@ -15,8 +16,8 @@ interface AddTripCardProps {
 
 export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [destination, setDestination] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [destinationCountry, setDestinationCountry] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [errors, setErrors] = useState<{ [k: string]: string | undefined }>({});
@@ -25,18 +26,13 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
 
   // Check if the form is valid
   const isValid = useMemo(() => {
-    const result = tripSchema.safeParse({
-      title,
-      destination,
-      startDate,
-      endDate,
-    });
+    const result = tripSchema.safeParse({ destinationCountry, purpose, startDate, endDate });
     return result.success;
-  }, [title, destination, startDate, endDate]);
+  }, [destinationCountry, purpose, startDate, endDate]);
 
   const reset = useCallback(() => {
-    setTitle("");
-    setDestination("");
+    setPurpose("");
+    setDestinationCountry("");
     setStartDate("");
     setEndDate("");
     setErrors({});
@@ -51,20 +47,10 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
     setIsCreating(true);
 
     // Mark all fields as touched to show errors
-    const allTouched = {
-      title: true,
-      destination: true,
-      startDate: true,
-      endDate: true,
-    };
+    const allTouched = { destinationCountry: true, purpose: true, startDate: true, endDate: true };
     setTouched(allTouched);
 
-    const result = tripSchema.safeParse({
-      title,
-      destination,
-      startDate,
-      endDate,
-    });
+    const result = tripSchema.safeParse({ destinationCountry, purpose, startDate, endDate });
 
     if (!result.success) {
       const fieldErrors: { [k: string]: string } = {};
@@ -82,8 +68,8 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title.trim(),
-          destination: destination.trim(),
+          destinationCountry: destinationCountry.trim(),
+          purpose: purpose.trim(),
           startDate,
           endDate,
           status: "Planning",
@@ -123,7 +109,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [title, destination, startDate, endDate, onAddTrip, reset]);
+  }, [destinationCountry, purpose, startDate, endDate, onAddTrip, reset]);
 
   return (
     <>
@@ -194,16 +180,16 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
         }
       >
         <AddTripForm
-          title={title}
-          destination={destination}
+          purpose={purpose}
+          destinationCountry={destinationCountry}
           startDate={startDate}
           endDate={endDate}
           errors={errors}
           touched={touched}
           onFieldBlur={handleFieldBlur}
           onChange={{
-            setTitle,
-            setDestination,
+            setPurpose,
+            setDestinationCountry,
             setStartDate,
             setEndDate,
             setErrors,

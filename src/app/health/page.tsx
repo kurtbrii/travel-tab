@@ -1,17 +1,20 @@
-async function getHealth() {
-  try {
-    // Use relative fetch to avoid env-specific base URL issues
-    const res = await fetch('/api/health', { cache: 'no-store' })
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
+import { appVersion } from '@/lib/version'
+
+// Build the health payload server-side to avoid an internal fetch
+// that may fail due to dev server nuances.
+function getHealthDirect() {
+  const data = {
+    status: 'ok' as const,
+    env: process.env.NODE_ENV ?? 'development',
+    version: appVersion,
+    timestamp: new Date().toISOString(),
   }
+  return { success: true, data }
 }
 
 export default async function HealthPage() {
-  const health = await getHealth()
-  const data = health?.data
+  const health = getHealthDirect()
+  const data = health.data
 
   return (
     <main className="mx-auto max-w-2xl p-6">

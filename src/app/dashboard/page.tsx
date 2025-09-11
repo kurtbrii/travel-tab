@@ -28,7 +28,7 @@ export default async function Dashboard() {
 
   return (
     <main className="min-h-screen bg-background">
-      <Navbar context="dashboard" />
+      <Navbar context="trips" />
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6 py-8">

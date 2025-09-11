@@ -126,9 +126,9 @@ export default function RegisterPage() {
         setSuccess(true);
         // Full navigation ensures Set-Cookie is applied before the next request
         if (typeof window !== 'undefined') {
-          window.location.href = "/dashboard";
+          window.location.href = "/trips";
         } else {
-          router.replace("/dashboard");
+          router.replace("/trips");
         }
       }
     } catch {

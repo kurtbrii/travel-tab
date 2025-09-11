@@ -37,6 +37,7 @@ export default function TripsGrid({
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
 
   // LocalStorage persistence
   const STORAGE_KEY = "travel-tab:tripsOrder:v1";
@@ -132,7 +133,11 @@ export default function TripsGrid({
             <div className="h-full">
               <AddTripCard
                 currentUserId={currentUserId}
-                onAddTrip={(t) => setTrips((prev) => [...prev, t])}
+                onAddTrip={(t) => {
+                  setTrips((prev) => [...prev, t])
+                  setFlash('Trip created successfully')
+                  setTimeout(() => setFlash(null), 2500)
+                }}
               />
             </div>
           </>
@@ -144,6 +149,12 @@ export default function TripsGrid({
           </>
         )}
       </div>
+
+      {flash && (
+        <div role="status" className="mt-6 p-3 rounded-md bg-success/15 text-success text-sm">
+          {flash}
+        </div>
+      )}
 
       {/* Floating preview while dragging */}
       <DragOverlay

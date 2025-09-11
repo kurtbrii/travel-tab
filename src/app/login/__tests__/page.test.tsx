@@ -65,7 +65,7 @@ describe('LoginPage UI', () => {
     expect(await screen.findByText(/password is required/i)).toBeInTheDocument()
   })
 
-  it('submits and redirects to /dashboard on success', async () => {
+  it('submits and redirects to /trips on success', async () => {
     render(<LoginPage />)
 
     await user.type(screen.getByPlaceholderText(/you@example.com/i), 'test@example.com')
@@ -77,7 +77,7 @@ describe('LoginPage UI', () => {
     await user.click(submit)
 
     await waitFor(() => {
-      expect((window as any).location.href).toBe('/dashboard')
+      expect((window as any).location.href).toBe('/trips')
     })
 
     // Ensure API was called as expected

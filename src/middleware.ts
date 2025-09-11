@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const isProtectedPage = pathname.startsWith('/dashboard')
+  const isProtectedPage = pathname.startsWith('/trips') || pathname.startsWith('/dashboard')
   const isAuthPage = pathname === '/login' || pathname === '/register'
 
   const token = request.cookies.get('auth-token')?.value
@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   // Redirect authenticated users away from auth pages
   if (isAuthPage && isAuthenticated) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/trips'
     return NextResponse.redirect(url)
   }
 
@@ -29,5 +29,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/login', '/register', '/dashboard', '/dashboard/:path*'],
+  matcher: ['/login', '/register', '/trips', '/trips/:path*', '/dashboard', '/dashboard/:path*'],
 }
