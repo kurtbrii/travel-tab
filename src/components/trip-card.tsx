@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin, Calendar, ClipboardList } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/ui/status-badge";
 import { Trip } from "@/types";
 import { toCountryName } from "@/lib/iso-countries";
@@ -11,9 +11,15 @@ interface TripCardProps {
 }
 
 function TripCard({ trip }: TripCardProps) {
+  const router = useRouter();
+
   const handleTripClick = () => {
-    // TODO: Implement trip detail view/navigation
-    alert(`Trip details for ${toCountryName(trip.destinationCountry)} (${trip.purpose}) coming soon!`);
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const returnTo = search ? `/trips${search}` : '';
+    const href = returnTo
+      ? `/trips/${encodeURIComponent(trip.id)}?returnTo=${encodeURIComponent(returnTo)}`
+      : `/trips/${encodeURIComponent(trip.id)}`;
+    router.push(href);
   };
 
   return (

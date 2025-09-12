@@ -61,6 +61,12 @@ export async function getTripsByUser(userId: string): Promise<TripType[]> {
   return trips.map(serializeTrip);
 }
 
+// Read single trip by id
+export async function getTripById(id: string): Promise<TripType | null> {
+  const trip = await prisma.trip.findUnique({ where: { id } });
+  return trip ? serializeTrip(trip) : null;
+}
+
 // Create operation
 export interface CreateTripInput {
   destinationCountry: string; // ISO alpha-2
