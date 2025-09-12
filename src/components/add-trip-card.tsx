@@ -137,7 +137,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
         }}
         header={
           <div className="px-5 py-4 border-b border-border">
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 id="add-trip-title" className="text-xl font-semibold text-foreground">
               Plan a New Trip
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -145,6 +145,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
             </p>
           </div>
         }
+        ariaLabelledBy="add-trip-title"
         footer={
           <div className="flex justify-end gap-3 px-5 py-4 border-t border-border">
             <button

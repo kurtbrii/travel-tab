@@ -9,6 +9,7 @@ interface AddTripModalProps {
   header?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  ariaLabelledBy?: string;
 }
 
 export default function AddTripModal({
@@ -17,37 +18,75 @@ export default function AddTripModal({
   header,
   children,
   footer,
+  ariaLabelledBy,
 }: AddTripModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // Handle click outside
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-      onClose();
-    }
-  }, [onClose]);
-
-  // Handle escape key
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+  // Handle escape + focus trap
+  const handleKeyDown = useCallback((event: { key: string; shiftKey: boolean; preventDefault: () => void }) => {
     if (event.key === 'Escape') {
       onClose();
+      return;
+    }
+
+    if (event.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      const isShift = event.shiftKey;
+
+      if (!isShift && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (isShift && active === first) {
+        event.preventDefault();
+        last.focus();
+      }
     }
   }, [onClose]);
 
   // Add event listeners when modal is open
   useEffect(() => {
     if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
+      // Save previously focused element to restore later
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+
+      // Key handling is attached to the dialog element via onKeyDown
       document.body.style.overflow = 'hidden';
+
+      // Move initial focus inside the dialog
+      // Try first focusable; fallback to the dialog container
+      setTimeout(() => {
+        if (!modalRef.current) return;
+        const focusable = modalRef.current.querySelector<HTMLElement>(
+          'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable) {
+          focusable.focus();
+        } else {
+          modalRef.current.setAttribute('tabindex', '-1');
+          modalRef.current.focus();
+        }
+      }, 0);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      // No document-level key listeners to avoid interfering with inputs
       document.body.style.overflow = 'unset';
+
+      // Restore focus to the previously focused trigger, if any
+      if (previouslyFocusedRef.current && typeof previouslyFocusedRef.current.focus === 'function') {
+        previouslyFocusedRef.current.focus();
+      }
     };
-  }, [open, handleClickOutside, handleKeyDown]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -62,6 +101,7 @@ export default function AddTripModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             role="presentation"
+            onMouseDown={onClose}
           />
 
           <div className="absolute inset-0 grid place-items-center p-4 overflow-y-auto">
@@ -80,7 +120,10 @@ export default function AddTripModal({
               role="dialog"
               aria-modal="true"
               onClick={(e) => e.stopPropagation()}
-            >
+              onMouseDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => handleKeyDown(e)}
+              aria-labelledby={ariaLabelledBy}
+              >
               {header}
               {children}
               {footer}
