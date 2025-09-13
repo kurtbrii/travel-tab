@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { isValidAlpha2 } from "@/lib/iso-countries"
 
 export const registerSchema = z.object({
   email: z.string().email({ message: "Enter a valid email" }),
@@ -25,7 +26,11 @@ export const tripSchema = z.object({
     .string()
     .length(2, { message: 'Use ISO alpha-2 code (e.g., US)' })
     .regex(/^[A-Za-z]{2}$/, { message: 'Use ISO alpha-2 letters only' })
-    .transform((s) => s.toUpperCase()),
+    .transform((s) => s.toUpperCase())
+    .refine((code) => isValidAlpha2(code), {
+      message: 'Unknown country code. Use ISO alpha-2 (e.g., US, GB)',
+      path: ['destinationCountry']
+    }),
   purpose: z
     .string()
     .min(3, { message: 'Purpose must be at least 3 characters' })

@@ -8,6 +8,7 @@ import { Trip } from "@/types";
 import { tripSchema } from "@/lib/validation";
 import { toCountryName } from "@/lib/iso-countries";
 import { Loader2 } from "lucide-react";
+import Toast from "@/components/ui/toast";
 
 interface AddTripCardProps {
   onAddTrip: (trip: Trip) => void;
@@ -23,6 +24,8 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
   const [errors, setErrors] = useState<{ [k: string]: string | undefined }>({});
   const [touched, setTouched] = useState<{ [k: string]: boolean }>({});
   const [isCreating, setIsCreating] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<'success' | 'error' | 'warning' | 'info'>('error');
 
   // Check if the form is valid
   const isValid = useMemo(() => {
@@ -91,17 +94,26 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
         }
 
         if (response.status === 401) {
-          alert("Please sign in to create a trip.");
+          setToastVariant('error');
+          setToastMsg("Please sign in to create a trip.");
         } else if (response.status === 400) {
-          alert(serverMessage || "Missing or invalid fields.");
+          // Surface destination validation inline if likely the cause
+          if (/country/i.test(serverMessage)) {
+            setErrors((prev) => ({ ...prev, destinationCountry: serverMessage || 'Invalid country code' }));
+          }
+          setToastVariant('warning');
+          setToastMsg(serverMessage || "Missing or invalid fields.");
         } else {
-          alert(serverMessage || "Failed to create trip. Please try again.");
+          setToastVariant('error');
+          setToastMsg(serverMessage || "Failed to create trip. Please try again.");
         }
         return;
       }
 
       const createdTrip = await response.json();
       onAddTrip(createdTrip);
+      setToastVariant('success');
+      setToastMsg('Trip created successfully');
       setOpen(false);
       reset();
     } catch (error) {
@@ -113,12 +125,13 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
 
   return (
     <>
+      <Toast open={!!toastMsg} message={toastMsg} onClose={() => setToastMsg(null)} variant={toastVariant} />
       <button
         onClick={() => setOpen(true)}
-        className="card shadow-card hover:shadow-lg cursor-pointer group border-2 border-dashed border-border hover:border-primary/50 bg-accent/30 hover:bg-accent/50 w-full h-full min-h-[260px] text-left"
+        className="card shadow-card hover:shadow-lg transition-all w-full h-full min-h-[230px] text-left cursor-pointer hover:scale-[1.005] active:scale-[0.99] animate-in fade-in-0 group"
         aria-label="Add new trip"
       >
-        <div className="flex h-full flex-col items-center justify-center py-8 text-center">
+        <div className="flex h-full flex-col items-center justify-center p-6 text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
             <Plus className="size-8 text-primary" />
           </div>

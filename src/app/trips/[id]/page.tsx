@@ -8,6 +8,7 @@ import { toCountryName } from "@/lib/iso-countries";
 import Link from "next/link";
 import BackLink from "@/components/back-link";
 import { unstable_noStore as noStore } from "next/cache";
+import DeleteTripButton from "@/components/delete-trip-button";
 
 // Disable caching for personalized SSR content
 export const dynamic = "force-dynamic";
@@ -74,8 +75,9 @@ export default async function TripDetailPage({
                 <span className="font-mono">{formatDate(trip.endDate)}</span>
               </p>
             </div>
-            <div className="shrink-0">
+            <div className="shrink-0 flex items-center gap-3">
               <StatusBadge status={trip.status} />
+              <DeleteTripButton tripId={trip.id} />
             </div>
           </div>
         </section>

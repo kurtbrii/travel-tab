@@ -24,6 +24,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import SortableTrip from "@/components/trips/sortable-trip";
+import Toast from "@/components/ui/toast";
 
 interface TripsGridProps {
   initialTrips: Trip[];
@@ -72,6 +73,19 @@ export default function TripsGrid({
         setTrips(applySavedOrder(initialTrips, order));
       } else {
         setTrips(initialTrips);
+      }
+      // Optional flash via URL param
+      if (typeof window !== 'undefined') {
+        const usp = new URLSearchParams(window.location.search);
+        const msg = usp.get('flash');
+        if (msg) {
+          setFlash(msg);
+          setTimeout(() => setFlash(null), 2500);
+          // Clear the param without reloading
+          usp.delete('flash');
+          const url = `${window.location.pathname}${usp.toString() ? `?${usp.toString()}` : ''}`
+          window.history.replaceState({}, '', url);
+        }
       }
     } catch {
       setTrips(initialTrips);
@@ -126,7 +140,14 @@ export default function TripsGrid({
             <SortableContext items={items} strategy={rectSortingStrategy}>
               {trips.map((trip) => (
                 <div key={trip.id} className="h-full animate-in fade-in-0 zoom-in-95">
-                  <SortableTrip trip={trip} />
+                  <SortableTrip
+                    trip={trip}
+                    onDeleted={(id) => {
+                      setTrips((prev) => prev.filter((t) => t.id !== id))
+                      setFlash('Trip deleted successfully')
+                      setTimeout(() => setFlash(null), 2500)
+                    }}
+                  />
                 </div>
               ))}
             </SortableContext>
@@ -150,11 +171,7 @@ export default function TripsGrid({
         )}
       </div>
 
-      {flash && (
-        <div role="status" className="mt-6 p-3 rounded-md bg-success/15 text-success text-sm">
-          {flash}
-        </div>
-      )}
+      <Toast open={!!flash} message={flash} onClose={() => setFlash(null)} variant="success" />
 
       {/* Floating preview while dragging */}
       <DragOverlay

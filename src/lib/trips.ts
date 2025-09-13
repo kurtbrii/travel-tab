@@ -123,3 +123,8 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
 
   return serializeTrip(created);
 }
+
+// Delete operation (hard delete)
+export async function deleteTripById(id: string): Promise<void> {
+  await prisma.trip.delete({ where: { id } });
+}

@@ -4,13 +4,15 @@ import { MapPin, Calendar, ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/ui/status-badge";
 import { Trip } from "@/types";
+import { ReactNode } from "react";
 import { toCountryName } from "@/lib/iso-countries";
 
 interface TripCardProps {
   trip: Trip;
+  trailingActions?: ReactNode;
 }
 
-function TripCard({ trip }: TripCardProps) {
+function TripCard({ trip, trailingActions }: TripCardProps) {
   const router = useRouter();
 
   const handleTripClick = () => {
@@ -22,13 +24,23 @@ function TripCard({ trip }: TripCardProps) {
     router.push(href);
   };
 
+  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTripClick();
+    }
+  };
+
   return (
-    <button
+    <div
       onClick={handleTripClick}
-      className="card shadow-card hover:shadow-lg transition-all w-full h-full min-h-[260px] text-left cursor-pointer hover:scale-[1.005] active:scale-[0.99] animate-in fade-in-0"
+      onKeyDown={onKeyDown}
+      role="button"
+      tabIndex={0}
+      className="card shadow-card hover:shadow-lg transition-all w-full h-full min-h-[230px] text-left cursor-pointer hover:scale-[1.005] active:scale-[0.99] animate-in fade-in-0"
       aria-label={`View details for trip to ${toCountryName(trip.destinationCountry)}`}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-1 text-muted-foreground">
             <MapPin className="size-4" />
@@ -39,7 +51,10 @@ function TripCard({ trip }: TripCardProps) {
             <span className="text-sm font-medium">{trip.purpose}</span>
           </div>
         </div>
-        <StatusBadge status={trip.status} />
+        <div className="shrink-0 flex items-center gap-2">
+          <StatusBadge status={trip.status} />
+          {trailingActions}
+        </div>
       </div>
 
       <div className="flex items-center gap-1 mb-4 text-muted-foreground">
@@ -65,7 +80,7 @@ function TripCard({ trip }: TripCardProps) {
           ))}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

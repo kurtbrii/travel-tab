@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AddTripModalProps {
@@ -90,7 +91,7 @@ export default function AddTripModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50">
@@ -111,11 +112,11 @@ export default function AddTripModal({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 damping: 20,
                 stiffness: 200,
-                duration: 0.5
+                duration: 0.5,
               }}
               role="dialog"
               aria-modal="true"
@@ -123,7 +124,7 @@ export default function AddTripModal({
               onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => handleKeyDown(e)}
               aria-labelledby={ariaLabelledBy}
-              >
+            >
               {header}
               {children}
               {footer}
@@ -131,6 +132,7 @@ export default function AddTripModal({
           </div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
