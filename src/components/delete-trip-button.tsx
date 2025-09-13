@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import DeleteTripModal from "@/components/delete-trip/delete-trip-modal";
@@ -17,7 +18,7 @@ export default function DeleteTripButton({ tripId }: { tripId: string }) {
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}`, {
           method: "DELETE",
         });
-        if (res.status === 204 || res.ok) {
+        if (res.status === 204 || res.ok || res.status === 404) {
           router.push("/trips?flash=Trip%20deleted%20successfully");
         }
       } finally {
@@ -31,7 +32,7 @@ export default function DeleteTripButton({ tripId }: { tripId: string }) {
       <Button variant="destructive" size="sm" onClick={() => setOpen(true)} disabled={pending}>
         <Trash2 className="size-4" /> Delete Trip
       </Button>
-      <DeleteTripModal open={open} onClose={() => setOpen(false)} onConfirm={onConfirm} />
+      <DeleteTripModal open={open} onClose={() => setOpen(false)} onConfirm={onConfirm} confirmDisabled={pending} />
     </>
   );
 }

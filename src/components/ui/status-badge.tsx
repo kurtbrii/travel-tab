@@ -21,7 +21,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        "px-2 py-1 rounded-full text-xs font-medium",
+        "px-2 py-1 rounded-full text-xs font-medium cursor-pointer",
         paletteClass,
         className
       )}

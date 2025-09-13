@@ -94,7 +94,9 @@ export default function AddTripModal({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50">
+        // Use a very high z-index to ensure the modal overlays any sticky
+        // headers/cards or drag layers that might set their own z-index.
+        <div className="fixed inset-0 z-[1000]">
           <motion.div
             className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-200"
             initial={{ opacity: 0 }}

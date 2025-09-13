@@ -34,7 +34,10 @@ describe('TripDetailPage', () => {
   })
 
   it('renders Back to Trips link preserving state (sanitized)', async () => {
-    vi.doMock('next/navigation', () => ({ notFound: vi.fn() }))
+    vi.doMock('next/navigation', async (importOriginal) => {
+      const actual: any = await importOriginal()
+      return { ...actual, notFound: vi.fn(), useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }
+    })
     vi.doMock('@/lib/auth', () => ({ getCurrentUser: vi.fn(async () => ({ id: 'u1' })) }))
     vi.doMock('@/lib/trips', () => ({ getTripById: vi.fn(async () => ({ id: 't1', userId: 'u1', purpose: 'Work', destinationCountry: 'US', startDate: '2025-01-01', endDate: '2025-01-02', status: 'Planning', statusColor: '', modules: [], createdAt: new Date(), updatedAt: new Date() })) }))
 
@@ -49,7 +52,10 @@ describe('TripDetailPage', () => {
   })
 
   it('sanitizes an unsafe returnTo and falls back to /trips', async () => {
-    vi.doMock('next/navigation', () => ({ notFound: vi.fn() }))
+    vi.doMock('next/navigation', async (importOriginal) => {
+      const actual: any = await importOriginal()
+      return { ...actual, notFound: vi.fn(), useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }
+    })
     vi.doMock('@/lib/auth', () => ({ getCurrentUser: vi.fn(async () => ({ id: 'u1' })) }))
     vi.doMock('@/lib/trips', () => ({ getTripById: vi.fn(async () => ({ id: 't2', userId: 'u1', purpose: 'Vacation', destinationCountry: 'CA', startDate: '2025-03-10', endDate: '2025-03-12', status: 'Planning', statusColor: '', modules: [], createdAt: new Date(), updatedAt: new Date() })) }))
 

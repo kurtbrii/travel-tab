@@ -16,16 +16,22 @@ function TripCard({ trip, trailingActions }: TripCardProps) {
   const router = useRouter();
 
   const handleTripClick = () => {
-    const search = typeof window !== 'undefined' ? window.location.search : '';
-    const returnTo = search ? `/trips${search}` : '';
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const returnTo = search ? `/trips${search}` : "";
     const href = returnTo
-      ? `/trips/${encodeURIComponent(trip.id)}?returnTo=${encodeURIComponent(returnTo)}`
+      ? `/trips/${encodeURIComponent(trip.id)}?returnTo=${encodeURIComponent(
+          returnTo
+        )}`
       : `/trips/${encodeURIComponent(trip.id)}`;
     router.push(href);
   };
 
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    // Only activate when the card itself is focused. Prevent triggering
+    // from bubbled key events (e.g., inputs inside portals like modals).
+    const isCardFocused = e.currentTarget === document.activeElement;
+    const isActivationKey = e.key === "Enter" || e.key === " ";
+    if (isCardFocused && isActivationKey) {
       e.preventDefault();
       handleTripClick();
     }
@@ -38,17 +44,23 @@ function TripCard({ trip, trailingActions }: TripCardProps) {
       role="button"
       tabIndex={0}
       className="card shadow-card hover:shadow-lg transition-all w-full h-full min-h-[230px] text-left cursor-pointer hover:scale-[1.005] active:scale-[0.99] animate-in fade-in-0"
-      aria-label={`View details for trip to ${toCountryName(trip.destinationCountry)}`}
+      aria-label={`View details for trip to ${toCountryName(
+        trip.destinationCountry
+      )}`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="flex items-center gap-1 text-muted-foreground">
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 text-muted-foreground min-w-0">
             <MapPin className="size-4" />
-            <span className="text-sm">{toCountryName(trip.destinationCountry)}</span>
+            <span className="text-sm truncate">
+              {toCountryName(trip.destinationCountry)}
+            </span>
           </div>
-          <div className="flex items-center gap-1 mt-1 text-foreground">
+          <div className="flex items-center gap-1 mt-1 text-foreground min-w-0">
             <ClipboardList className="size-4" />
-            <span className="text-sm font-medium">{trip.purpose}</span>
+            <span className="text-sm font-medium truncate" title={trip.purpose}>
+              {trip.purpose}
+            </span>
           </div>
         </div>
         <div className="shrink-0 flex items-center gap-2">

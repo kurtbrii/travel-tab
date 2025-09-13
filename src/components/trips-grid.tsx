@@ -9,7 +9,6 @@ import TripSkeleton from "@/components/trips/trip-skeleton";
 import {
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -17,12 +16,7 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  rectSortingStrategy,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
+import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 import SortableTrip from "@/components/trips/sortable-trip";
 import Toast from "@/components/ui/toast";
 
@@ -94,9 +88,10 @@ export default function TripsGrid({
     }
   }, [initialTrips]);
 
+  // Only enable pointer-based dragging to avoid unintended keyboard
+  // interactions (e.g., Enter/Space while closing modals).
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
   const items = useMemo(() => trips.map((t) => t.id), [trips]);

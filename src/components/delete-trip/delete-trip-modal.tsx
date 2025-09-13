@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import AddTripModal from "@/components/add-trip/add-trip-modal";
 import { Calendar, ClipboardList, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ interface DeleteTripModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void | Promise<void>;
+  confirmDisabled?: boolean;
   trip?: {
     purpose?: string;
     destinationCountry?: string;
@@ -17,7 +19,7 @@ interface DeleteTripModalProps {
   };
 }
 
-export default function DeleteTripModal({ open, onClose, onConfirm, trip }: DeleteTripModalProps) {
+export default function DeleteTripModal({ open, onClose, onConfirm, confirmDisabled, trip }: DeleteTripModalProps) {
   const destination = trip?.destinationCountry ? toCountryName(trip.destinationCountry) : undefined
   const fmt = (iso?: string) => {
     if (!iso) return ''
@@ -48,7 +50,7 @@ export default function DeleteTripModal({ open, onClose, onConfirm, trip }: Dele
       footer={
         <div className="px-5 pb-5 pt-3 flex items-center justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="destructive" onClick={onConfirm}>
+          <Button variant="destructive" onClick={onConfirm} disabled={confirmDisabled}>
             <Trash2 className="size-4" /> Delete
           </Button>
         </div>

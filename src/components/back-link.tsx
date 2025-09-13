@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -32,4 +33,3 @@ export default function BackLink({ className, href, onClick, ...rest }: BackLink
     <Link {...rest} href={href} onClick={handleClick} className={cn(className)} />
   );
 }
-

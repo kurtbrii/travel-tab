@@ -128,3 +128,54 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
 export async function deleteTripById(id: string): Promise<void> {
   await prisma.trip.delete({ where: { id } });
 }
+
+// Update operation
+export interface UpdateTripInput {
+  destinationCountry: string;
+  purpose: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  status?: TripType["status"]; // optional edit of status
+}
+
+export async function updateTrip(id: string, input: UpdateTripInput): Promise<TripType> {
+  // Validate fields using same zod schema as creation
+  const parsed = tripSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues?.[0]?.message || "Invalid trip data";
+    throw new Error(message);
+  }
+  if (!isValidAlpha2(parsed.data.destinationCountry)) {
+    throw new Error("Invalid destination country code.");
+  }
+
+  const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!isoDateRegex.test(input.startDate) || !isoDateRegex.test(input.endDate)) {
+    throw new Error("Invalid date format. Use YYYY-MM-DD.");
+  }
+  const start = new Date(`${input.startDate}T00:00:00.000Z`);
+  const end = new Date(`${input.endDate}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    throw new Error("Invalid date values.");
+  }
+  if (end < start) {
+    throw new Error("End date must be after start date");
+  }
+
+  const updated = await prisma.trip.update({
+    where: { id },
+    data: {
+      // Keep legacy fields populated for backward compatibility
+      title: input.purpose.trim(),
+      destination: toCountryName(input.destinationCountry.trim()),
+      // Core fields per story
+      purpose: input.purpose.trim(),
+      destinationCountry: input.destinationCountry.trim().toUpperCase(),
+      startDate: start,
+      endDate: end,
+      ...(input.status ? { status: fromDisplayStatus(input.status) as any } : {}),
+    },
+  });
+
+  return serializeTrip(updated);
+}
