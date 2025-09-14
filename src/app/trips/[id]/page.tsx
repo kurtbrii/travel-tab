@@ -116,17 +116,6 @@ export default async function TripDetailPage({
                   </div>
                 ),
               },
-              {
-                id: "borderbuddy",
-                label: "BorderBuddy",
-                content: (
-                  <div className="card shadow-card p-4 md:p-6">
-                    <p className="text-sm text-muted-foreground">
-                      BorderBuddy features coming soon.
-                    </p>
-                  </div>
-                ),
-              },
             ]}
           />
         </section>

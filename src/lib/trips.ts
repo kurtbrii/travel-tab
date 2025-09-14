@@ -112,7 +112,6 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
       destinationCountry: input.destinationCountry.trim().toUpperCase(),
       startDate: start,
       endDate: end,
-      status: fromDisplayStatus(input.status || "Planning") as any,
       statusColor:
         input.statusColor ||
         "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
@@ -173,7 +172,6 @@ export async function updateTrip(id: string, input: UpdateTripInput): Promise<Tr
       destinationCountry: input.destinationCountry.trim().toUpperCase(),
       startDate: start,
       endDate: end,
-      ...(input.status ? { status: fromDisplayStatus(input.status) as any } : {}),
     },
   });
 

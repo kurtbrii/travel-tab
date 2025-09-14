@@ -1,0 +1,17 @@
+schema: 1
+story: '2.001'
+story_title: 'US-001: Create Trip'
+gate: 'PASS'
+status_reason: 'Re-reviewed: Meets all ACs; ARIA error linking verified; recommend adding one integration test for create+list scoping.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-09-12T12:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor: []

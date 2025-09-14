@@ -1,0 +1,22 @@
+schema: 1
+story: '2.002'
+story_title: 'US-002: View Trip Detail'
+gate: 'PASS'
+status_reason: 'Scope and ACs are clear and testable. Owner-only access with 404 is specified; tabs require ARIA compliance; back navigation preserves query state. Risks (open redirect via returnTo, timezone formatting, SSR caching of personalized content) have straightforward mitigations.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-09-12T03:17:08Z'
+
+waiver: { active: false }
+
+top_issues:
+  - 'Sanitize/validate returnTo to avoid open redirect; prefer history.back() with safe fallback.'
+  - 'Ensure accessible tabs per ARIA APG (roles, aria-selected, focus management).'
+  - 'Disable shared caching for user-scoped SSR responses.'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 1, low: 2 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'Validate returnTo or use safe back behavior.'
+      - 'Add integration tests for 404 on non-owner and stateful back.'

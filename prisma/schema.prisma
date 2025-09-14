@@ -12,32 +12,83 @@ model User {
   fullName       String
   email          String   @unique
   hashedPassword String
+  nationality    String?
   trips          Trip[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
 
 model Trip {
-  id          String   @id @default(cuid())
-  title       String
-  destination String
+  id                 String   @id @default(cuid())
+  title              String
+  destination        String
   // New fields aligning with story US-001
-  purpose             String?
-  destinationCountry  String?
-  startDate   DateTime
-  endDate     DateTime
-  status      TripStatus @default(Planning)
-  statusColor String?
-  modules     String[]
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  purpose            String?
+  destinationCountry String?
+  startDate          DateTime
+  endDate            DateTime
+  // status             TripStatus @default(Planning)
+  statusColor        String?
+  modules            String[]
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+  borderBuddy        BorderBuddy?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
-enum TripStatus {
-  Planning
-  Ready_to_Go
-  In_Progress
-  Completed
+/// BorderBuddy module instance, exactly one per Trip
+model BorderBuddy {
+  id        String   @id @default(cuid())
+  tripId    String   @unique
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  enabledAt DateTime @default(now())
+
+  // Related entities
+  context   BorderBuddyContext?
+  places    PlacesRecommendation?
+  messages  ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Persisted context form values per BorderBuddy
+model BorderBuddyContext {
+  id            String   @id @default(cuid())
+  borderBuddyId String   @unique
+  borderBuddy   BorderBuddy @relation(fields: [borderBuddyId], references: [id], onDelete: Cascade)
+
+  interests   String[]
+  regions     String[]
+  budget      String?
+  style       String?
+  constraints String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Latest generated places list for a BorderBuddy
+model PlacesRecommendation {
+  id            String   @id @default(cuid())
+  borderBuddyId String   @unique
+  borderBuddy   BorderBuddy @relation(fields: [borderBuddyId], references: [id], onDelete: Cascade)
+
+  generatedAt DateTime @default(now())
+  items       Json
+}
+
+/// Chat messages tied to a BorderBuddy
+model ChatMessage {
+  id            String   @id @default(cuid())
+  borderBuddyId String
+  borderBuddy   BorderBuddy @relation(fields: [borderBuddyId], references: [id], onDelete: Cascade)
+
+  role    String   // "User" | "Assistant"
+  kind    String   // e.g., "Chat"
+  content String
+  createdAt DateTime @default(now())
+
+  @@index([borderBuddyId, createdAt])
 }

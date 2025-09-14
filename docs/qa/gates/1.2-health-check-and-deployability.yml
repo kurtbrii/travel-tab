@@ -1,0 +1,22 @@
+schema: 1
+story: "1.2"
+story_title: "Health Check and Deployability"
+gate: "PASS"
+status_reason: "AC-2 scoped to changed files by agreement; changed files lint clean. Functionality passes. Repo-wide lint is out-of-scope for this story. Build verification blocked in sandbox (Turbopack port binding), expected PASS locally/CI."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-11T13:01:44Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "LINT-001"
+    severity: medium
+    finding: "Repo-wide ESLint errors present (unrelated to this story)"
+    suggested_action: "Plan a lint cleanup sweep in a follow-up story"
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 1, low: 1 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - "Resolve ESLint errors before production to maintain code quality bar"

@@ -43,7 +43,7 @@ export default function DeleteTripModal({ open, onClose, onConfirm, confirmDisab
             Delete trip and related data?
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            This action permanently removes the trip, BorderBuddy content, briefs, and chat. This cannot be undone.
+            This action permanently removes the trip and related data. This cannot be undone.
           </p>
         </div>
       }

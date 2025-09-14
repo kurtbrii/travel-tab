@@ -1,0 +1,25 @@
+schema: 1
+story: '2.003'
+story_title: 'US-003: Delete Trip'
+gate: 'PASS'
+status_reason: 'Clear ACs; key risks (atomic cascading deletion, unauthorized access leakage, double-submit) have straightforward mitigations. Recommend transaction/FK cascade, idempotency, and telemetry.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-09-13T12:43:44Z'
+
+waiver: { active: false }
+
+top_issues:
+  - 'Ensure atomic cascading deletion via DB FKs (ON DELETE CASCADE) or single transaction covering all related records.'
+  - 'Enforce owner check server-side; consider 404 vs 403 to avoid existence disclosure.'
+  - 'Handle idempotency/double-submit; disable confirm and ensure repeated calls are safe.'
+  - 'Revalidate/invalidate list cache after delete to prevent stale UI.'
+
+risk_summary:
+  totals: { critical: 0, high: 1, medium: 2, low: 1 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'Add integration tests verifying cascade removal across BorderBuddy/context/places/chat.'
+      - 'Ensure transactional delete or FK cascade to prevent partial state.'
+      - 'Decide and document 403 vs 404 policy; keep response generic.'
+      - 'Track telemetry for confirm/cancel/success/failure.'
