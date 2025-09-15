@@ -3,6 +3,7 @@ import { ok, created, responses } from '@/lib/api'
 import { getCurrentUser } from '@/lib/auth'
 import { PlacesService } from '@/server/services/places.service'
 import { GeneratePlacesRequest } from '@/server/contracts/places.dto'
+import { consume } from '@/server/middleware/rate-limit'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
@@ -24,6 +25,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!user) return responses.unauthorized()
   const { id } = await params
   if (!id) return responses.badRequest('Missing tripId')
+  // Basic per-user rate limiting for places generation
+  const key = `${user.id}:${id}:places:post`
+  const allowed = consume(key, { limit: 3, windowMs: 60_000 })
+  if (!allowed) return responses.tooManyRequests('Please try again later')
   const json = await req.json().catch(() => ({}))
   const parsed = GeneratePlacesRequest.safeParse(json)
   if (!parsed.success) return responses.badRequest(parsed.error.issues?.[0]?.message)

@@ -12,12 +12,14 @@ interface AddTripFormProps {
   destinationCountry: string;
   startDate: string;
   endDate: string;
+  enableBorderBuddy?: boolean;
   errors: { [k: string]: string | undefined };
   onChange: {
     setPurpose: (v: string) => void;
     setDestinationCountry: (v: string) => void;
     setStartDate: (v: string) => void;
     setEndDate: (v: string) => void;
+    setEnableBorderBuddy?: (v: boolean) => void;
     setErrors: (errors: { [k: string]: string | undefined }) => void;
   };
   onFieldBlur: (field: string) => void;
@@ -29,6 +31,7 @@ export default function AddTripForm({
   destinationCountry,
   startDate,
   endDate,
+  enableBorderBuddy,
   errors,
   onChange,
   onFieldBlur,
@@ -126,6 +129,27 @@ export default function AddTripForm({
           error={getError('endDate')}
         />
       </div>
+
+      {/* One-time module toggle */}
+      {typeof onChange.setEnableBorderBuddy === 'function' && (
+        <div className="mt-2 border-t border-border/60 pt-4">
+          <label className="flex items-start gap-3 select-none">
+            <input
+              type="checkbox"
+              className="mt-1 size-4 accent-primary"
+              checked
+              disabled
+              aria-describedby="bb-desc"
+            />
+            <div>
+              <div className="text-sm font-medium">Enable BorderBuddy</div>
+              <p id="bb-desc" className="text-xs text-muted-foreground mt-0.5">
+                Turn on the BorderBuddy assistant for this trip. This choice is permanent and cannot be edited later.
+              </p>
+            </div>
+          </label>
+        </div>
+      )}
     </div>
   );
 }

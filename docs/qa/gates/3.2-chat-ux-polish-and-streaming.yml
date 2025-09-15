@@ -1,0 +1,21 @@
+# <!-- Powered by BMAD™ Core -->
+schema: 1
+story: "3.2"
+story_title: "Chat UX Polish and Streaming"
+gate: "PASS"
+status_reason: "All ACs met with streaming, typing indicator, retry, and disclaimer validated by unit and UI tests. Sensible fallbacks and backoff in place."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-15T02:41:54Z"
+
+waiver: { active: false }
+
+top_issues: []
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - "Monitor stream abort/error rates in prod"
+      - "Consider adding explicit live-region announcement test"
+

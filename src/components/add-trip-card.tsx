@@ -26,6 +26,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<'success' | 'error' | 'warning' | 'info'>('error');
+  // BorderBuddy is enabled by default for all new trips
 
   // Check if the form is valid
   const isValid = useMemo(() => {
@@ -38,6 +39,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
     setDestinationCountry("");
     setStartDate("");
     setEndDate("");
+    // no module toggle; nothing to reset for BorderBuddy
     setErrors({});
     setTouched({});
   }, []);
@@ -78,7 +80,7 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
           status: "Planning",
           statusColor:
             "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
-          modules: [],
+          modules: ["BorderBuddy"],
         }),
         credentials: "include",
       });
@@ -111,6 +113,21 @@ export function AddTripCard({ onAddTrip, currentUserId }: AddTripCardProps) {
       }
 
       const createdTrip = await response.json();
+
+      // If user opted in, enable the BorderBuddy module server-side (one-time)
+      if (createdTrip?.id) {
+        try {
+          await fetch(`/api/trips/${encodeURIComponent(createdTrip.id)}/borderbuddy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          })
+        } catch (e) {
+          // Non-blocking: we'll still create the trip and user can enable later if needed
+          console.warn('BorderBuddy enable failed:', e)
+        }
+      }
+
       onAddTrip(createdTrip);
       setToastVariant('success');
       setToastMsg('Trip created successfully');

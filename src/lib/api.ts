@@ -28,6 +28,6 @@ export const responses = {
   forbidden: (msg?: string) => error('FORBIDDEN', msg || 'Not allowed', 403),
   notFound: (msg?: string) => error('NOT_FOUND', msg || 'Not found', 404),
   conflict: (msg?: string) => error('CONFLICT', msg || 'Conflict', 409),
+  tooManyRequests: (msg?: string) => error('RATE_LIMITED', msg || 'Too many requests', 429),
   serverError: (msg?: string) => error('SERVER_ERROR', msg || 'Server error', 500),
 }
-

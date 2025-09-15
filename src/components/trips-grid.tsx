@@ -19,6 +19,7 @@ import {
 import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 import SortableTrip from "@/components/trips/sortable-trip";
 import Toast from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
 interface TripsGridProps {
   initialTrips: Trip[];
@@ -29,6 +30,7 @@ export default function TripsGrid({
   initialTrips,
   currentUserId,
 }: TripsGridProps) {
+  const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -151,8 +153,13 @@ export default function TripsGrid({
                 currentUserId={currentUserId}
                 onAddTrip={(t) => {
                   setTrips((prev) => [...prev, t])
-                  setFlash('Trip created successfully')
-                  setTimeout(() => setFlash(null), 2500)
+                  // Navigate to new trip with BorderBuddy tab open
+                  try {
+                    router.push(`/trips/${encodeURIComponent(t.id)}?tab=assistant`)
+                  } catch {
+                    setFlash('Trip created successfully')
+                    setTimeout(() => setFlash(null), 2500)
+                  }
                 }}
               />
             </div>

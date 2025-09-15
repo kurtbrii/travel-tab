@@ -1,0 +1,32 @@
+schema: 1
+story: "3.1"
+story_title: "Story 3.1: Enable BorderBuddy (Context + Chat + Places)"
+gate: "PASS"
+status_reason: "All ACs met. Chat uses OpenAI with disclaimer and safe fallback; idempotent enablement, persisted context, and simple places list delivered. Advisory hardening items remain (rate limits, PII redaction, telemetry)."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-15T00:00:00Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "RATE-001"
+    severity: medium
+    finding: "No basic rate limiting on chat/places POST endpoints"
+    suggested_action: "Introduce simple per-user rate limits and map to 429"
+  - id: "SEC-PII-001"
+    severity: low
+    finding: "No documented PII redaction strategy for prompts"
+    suggested_action: "Add prompt redaction and logging hygiene prior to LLM calls"
+  - id: "OBS-001"
+    severity: low
+    finding: "No telemetry for LLM latency/errors or history window tuning"
+    suggested_action: "Add minimal observability to guide scaling and tuning"
+
+risk_summary:
+  totals: { critical: 0, high: 1, medium: 2, low: 1 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - "Add rate limits; keep LLM history bounded and tune as needed"
+      - "Add telemetry for LLM latency/error rates"
+      - "Document whether places will adopt LLM generation beyond MVP"
