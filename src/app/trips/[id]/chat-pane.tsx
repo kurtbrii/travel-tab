@@ -4,8 +4,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import MarkdownContent from '@/components/ui/markdown-content'
+import ContextForm from './context-form'
 
 type ChatMessage = { id?: string; role: 'User' | 'Assistant'; content: string }
+type BorderBuddyContext = {
+  interests: string[]
+  regions: string[]
+  budget?: string | null
+  style?: string | null
+  constraints: string[]
+}
 
 export default function ChatPane({ tripId }: { tripId: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -13,34 +21,126 @@ export default function ChatPane({ tripId }: { tripId: string }) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [assistantDraft, setAssistantDraft] = useState<string>('')
+  const [context, setContext] = useState<BorderBuddyContext | null>(null)
+  const [isLoadingContext, setIsLoadingContext] = useState(false)
+  const [borderBuddyEnabled, setBorderBuddyEnabled] = useState<boolean | null>(null) // null = loading, true/false = loaded
+  const [currentContextForEdit, setCurrentContextForEdit] = useState<BorderBuddyContext | null>(null)
   const lastUserMessageRef = useRef<string | null>(null)
   const liveRef = useRef<HTMLDivElement>(null)
 
+  // Check BorderBuddy status and load data on component mount
   useEffect(() => {
     let isMounted = true
-    const load = async () => {
+    const loadBorderBuddyData = async () => {
       try {
-        let res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy/chat/messages`)
+        setIsLoadingContext(true)
+        setError(null)
+
+        // Check BorderBuddy status
+        const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy`)
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error?.message || 'Failed to check BorderBuddy status')
+        }
         const data = await res.json()
         if (!isMounted) return
-        if (data?.success && Array.isArray(data.data?.messages)) {
-          setMessages(data.data.messages)
-          return
-        }
-        // If not enabled, enable automatically then retry once
-        if (!data?.success && res.status === 404) {
-          await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy`, { method: 'POST' })
-          res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy/chat/messages`)
-          const again = await res.json().catch(() => null)
-          if (again?.success && Array.isArray(again.data?.messages)) {
-            setMessages(again.data.messages)
+
+        const isEnabled = data?.success && data.data?.enabled
+        setBorderBuddyEnabled(isEnabled)
+
+        // If BorderBuddy is enabled, load context and messages
+        if (isEnabled) {
+          // Load context
+          const ctxRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy/context`)
+          if (!ctxRes.ok) {
+            const errorData = await ctxRes.json()
+            throw new Error(errorData.error?.message || 'Failed to load context')
+          }
+          const ctxData = await ctxRes.json()
+          if (!isMounted) return
+
+          if (ctxData?.success) {
+            setContext(ctxData.data.context || null)
+          }
+
+          // Load messages
+          const msgRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy/chat/messages`)
+          if (!msgRes.ok) {
+            const errorData = await msgRes.json()
+            throw new Error(errorData.error?.message || 'Failed to load messages')
+          }
+          const msgData = await msgRes.json()
+          if (!isMounted) return
+
+          if (msgData?.success && Array.isArray(msgData.data?.messages)) {
+            setMessages(msgData.data.messages)
           }
         }
-      } catch {}
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('Error loading BorderBuddy data:', err)
+          setError(err.message || 'Failed to load BorderBuddy data')
+          setBorderBuddyEnabled(false)
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingContext(false)
+        }
+      }
     }
-    load()
+    loadBorderBuddyData()
     return () => { isMounted = false }
   }, [tripId])
+
+  
+  const handleContextSubmit = async (newContext: BorderBuddyContext) => {
+    try {
+      setIsLoadingContext(true)
+      setError(null)
+
+      // First enable BorderBuddy (if not already enabled)
+      if (borderBuddyEnabled !== true) {
+        const bbRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy`, { method: 'POST' })
+        if (!bbRes.ok) {
+          const errorData = await bbRes.json()
+          throw new Error(errorData.error?.message || 'Failed to enable BorderBuddy')
+        }
+        await bbRes.json().catch(() => null) // We don't care about the response, just that it's enabled
+        setBorderBuddyEnabled(true)
+      }
+
+      // Then save context
+      const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/borderbuddy/context`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newContext),
+      })
+      const data = await res.json()
+      if (data?.success) {
+        setContext(newContext)
+        setCurrentContextForEdit(null) // Clear editing state
+        // Don't clear messages or borderBuddyEnabled - preserve the conversation
+      } else {
+        throw new Error(data?.error?.message || 'Failed to save context')
+      }
+    } catch (err: any) {
+      console.error('Error saving context:', err)
+      throw err
+    } finally {
+      setIsLoadingContext(false)
+    }
+  }
+
+  const handleEditContext = () => {
+    // Store current context in state temporarily for editing
+    setCurrentContextForEdit(context)
+    // Don't set context to null - keep the BorderBuddy enabled and messages
+  }
+
+  const handleCancelEdit = () => {
+    // Just clear the editing state and restore the original context
+    setCurrentContextForEdit(null)
+  }
 
   const announce = (text: string) => {
     if (liveRef.current) {
@@ -146,9 +246,118 @@ export default function ChatPane({ tripId }: { tripId: string }) {
     </p>
   ), [])
 
+  const ContextSummary = useMemo(() => {
+    if (!context) return null
+
+    const hasPreferences =
+      context.interests.length > 0 ||
+      context.regions.length > 0 ||
+      context.budget ||
+      context.style ||
+      context.constraints.length > 0
+
+    if (!hasPreferences) return null
+
+    return (
+      <div className="mb-4 p-3 bg-muted/30 rounded-lg border border-border/60">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-foreground">Your Travel Preferences</h3>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleEditContext}
+            className="text-xs h-6 px-2"
+          >
+            Edit
+          </Button>
+        </div>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          {context.interests.length > 0 && (
+            <div>
+              <span className="font-medium">Interests:</span> {context.interests.join(', ')}
+            </div>
+          )}
+          {context.regions.length > 0 && (
+            <div>
+              <span className="font-medium">Regions:</span> {context.regions.join(', ')}
+            </div>
+          )}
+          {context.budget && (
+            <div>
+              <span className="font-medium">Budget:</span> {context.budget}
+            </div>
+          )}
+          {context.style && (
+            <div>
+              <span className="font-medium">Style:</span> {context.style}
+            </div>
+          )}
+          {context.constraints.length > 0 && (
+            <div>
+              <span className="font-medium">Constraints:</span> {context.constraints.join(', ')}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }, [context, handleEditContext])
+
+  // Show loading state while checking BorderBuddy status
+  if (borderBuddyEnabled === null || isLoadingContext) {
+    return (
+      <div className="card shadow-card p-6">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="text-sm text-muted-foreground">Loading BorderBuddy...</div>
+          <div className="text-xs text-muted-foreground text-center max-w-xs">
+            Checking your BorderBuddy status and loading preferences...
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show form if BorderBuddy is not enabled OR if there's no context saved yet OR if user is actively editing
+  if (borderBuddyEnabled === false || (borderBuddyEnabled === true && !context) || currentContextForEdit) {
+    return (
+      <div>
+        {error && (
+          <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-destructive mb-1">Unable to setup BorderBuddy</h3>
+                <p className="text-xs text-destructive/80">{error}</p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-xs bg-destructive/20 hover:bg-destructive/30 text-destructive px-3 py-1 rounded transition-colors"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        )}
+        <ContextForm
+          onSubmit={handleContextSubmit}
+          onCancel={handleCancelEdit}
+          initialContext={currentContextForEdit || context || {
+            interests: [],
+            regions: [],
+            budget: null,
+            style: null,
+            constraints: [],
+          }}
+          mode={currentContextForEdit ? 'edit' : 'setup'}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="card shadow-card p-4 md:p-6">
       <div aria-live="polite" aria-atomic="true" role="status" ref={liveRef} className="sr-only" />
+
+      {ContextSummary}
 
       <div className="space-y-3 max-h-[50vh] overflow-auto border border-border/60 rounded p-3 bg-background/40">
         {messages.map((m, idx) => (

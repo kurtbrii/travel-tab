@@ -10,7 +10,7 @@ export const ContextService = {
     const bb = await BorderBuddyRepo.findByTripId(tripId)
     if (!bb) return { ok: false as const, code: 'NOT_FOUND' as const, message: 'BorderBuddy not enabled' }
     const ctx = await ContextRepo.getByBorderBuddyId(bb.id)
-    return { ok: true as const, context: ctx ?? { interests: [], regions: [], budget: null, style: null, constraints: [] } }
+    return { ok: true as const, context: ctx } // Return null if no context exists
   },
 
   async save(tripId: string, userId: string, input: { interests: string[]; regions: string[]; budget?: string | null; style?: string | null; constraints: string[] }) {

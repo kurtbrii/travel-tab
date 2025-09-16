@@ -1,2 +1,0 @@
-# Background Context
-TravelTab with BorderBuddy targets individual travelers who want conversational help planning a trip. The MVP builds a narrow, high‑value vertical slice: authenticate, create a trip, fill a BorderBuddy context form, and chat with an LLM to receive guidance and a simple places list — all within one trip view. The product reduces planning uncertainty via quick, contextual answers. For MVP, there is no map integration and no government API calls; chat uses OpenAI with clear disclaimers.

@@ -1,6 +1,7 @@
 import { TripsRepo } from '@/server/repositories/trips.repo'
 import { BorderBuddyRepo } from '@/server/repositories/borderbuddy.repo'
 import { ChatRepo } from '@/server/repositories/chat.repo'
+import { ContextRepo } from '@/server/repositories/context.repo'
 import { askChat, askChatStream, buildSystemPrompt } from '@/server/services/llm'
 import type { ChatStreamEvent } from '@/server/contracts/chat.dto'
 
@@ -35,7 +36,14 @@ export const ChatService = {
         content: m.content,
       }))
 
-    const system = buildSystemPrompt({})
+    // Fetch context to include in system prompt
+    const context = await ContextRepo.getByBorderBuddyId(bb.id)
+
+    const system = buildSystemPrompt({
+      destination: trip.destinationCountry,
+      dates: `${trip.startDate} to ${trip.endDate}`,
+      context: context || undefined
+    })
     const messages = [{ role: 'system' as const, content: system }, ...history]
 
     const disclaimer = 'Informational guidance only. Verify details with official or trusted sources.'
@@ -75,7 +83,15 @@ export const ChatService = {
         role: m.role === 'Assistant' ? 'assistant' as const : 'user' as const,
         content: m.content,
       }))
-    const system = buildSystemPrompt({})
+
+    // Fetch context to include in system prompt
+    const context = await ContextRepo.getByBorderBuddyId(bb.id)
+
+    const system = buildSystemPrompt({
+      destination: trip.destinationCountry,
+      dates: `${trip.startDate} to ${trip.endDate}`,
+      context: context || undefined
+    })
     const messages = [{ role: 'system' as const, content: system }, ...history]
 
     const disclaimer = 'Informational guidance only. Verify details with official or trusted sources.'

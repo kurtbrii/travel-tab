@@ -168,14 +168,46 @@ async function backoff(attempt: number) {
   await new Promise((r) => setTimeout(r, ms))
 }
 
-export function buildSystemPrompt(input: { destination?: string | null; dates?: string | null }) {
+export function buildSystemPrompt(input: {
+  destination?: string | null;
+  dates?: string | null;
+  context?: {
+    interests?: string[];
+    regions?: string[];
+    budget?: string | null;
+    style?: string | null;
+    constraints?: string[];
+  }
+}) {
   const lines = [
     'You are BorderBuddy, a concise, friendly travel assistant.',
     'Provide practical, safe suggestions tailored to the trip context.',
     'Avoid fabricating booking details. Do not claim real-time data.',
     'Format with short paragraphs or bullet points as appropriate.',
   ]
+
   if (input.destination) lines.push(`Destination: ${input.destination}`)
   if (input.dates) lines.push(`Dates: ${input.dates}`)
+
+  // Add context information if available
+  if (input.context) {
+    const ctx = input.context
+    if (ctx.interests && ctx.interests.length > 0) {
+      lines.push(`Traveler Interests: ${ctx.interests.join(', ')}`)
+    }
+    if (ctx.regions && ctx.regions.length > 0) {
+      lines.push(`Preferred Regions: ${ctx.regions.join(', ')}`)
+    }
+    if (ctx.budget) {
+      lines.push(`Budget Range: ${ctx.budget}`)
+    }
+    if (ctx.style) {
+      lines.push(`Travel Style: ${ctx.style}`)
+    }
+    if (ctx.constraints && ctx.constraints.length > 0) {
+      lines.push(`Travel Constraints: ${ctx.constraints.join(', ')}`)
+    }
+  }
+
   return lines.join('\n')
 }
